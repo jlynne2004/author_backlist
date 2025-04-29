@@ -1,5 +1,6 @@
-# full_pipeline.py
+# full_pipeline.py (updated with new author detection)
 
+import os
 from scrape_goodreads_backlist import search_goodreads_author, scrape_goodreads_books
 import pandas as pd
 from openpyxl import Workbook
@@ -12,21 +13,42 @@ print("[1/2] Scraping Goodreads backlists...")
 
 # Load authors from your real convention CSV
 author_df = pd.read_csv("announced_authors.csv")
-authors = author_df["Author Name"].dropna().tolist()
+all_authors = author_df["Author Name"].dropna().tolist()
 
-all_books = []
-for author in authors:
+# Load existing scraped data if it exists
+if os.path.exists("author_backlists_scraped.csv"):
+    existing_data = pd.read_csv("author_backlists_scraped.csv")
+    scraped_authors = existing_data["Author"].dropna().unique().tolist()
+    print(f"Found existing scraped data. {len(scraped_authors)} authors already scraped.")
+else:
+    existing_data = pd.DataFrame()
+    scraped_authors = []
+
+# Determine which authors still need to be scraped
+authors_to_scrape = [author for author in all_authors if author not in scraped_authors]
+
+print(f"Authors to scrape: {authors_to_scrape}\n")
+
+new_books = []
+for author in authors_to_scrape:
     print(f"Scraping {author}...")
     author_url = search_goodreads_author(author)
     if author_url:
         books = scrape_goodreads_books(author_url)
         for book in books:
             book["Author"] = author
-        all_books.extend(books)
+        new_books.extend(books)
     time.sleep(2)
 
-scraped_df = pd.DataFrame(all_books)
-scraped_df.to_csv("author_backlists_scraped.csv", index=False)
+# Merge new data with existing data
+if new_books:
+    new_data = pd.DataFrame(new_books)
+    full_data = pd.concat([existing_data, new_data], ignore_index=True)
+else:
+    full_data = existing_data
+
+# Save updated data
+full_data.to_csv("author_backlists_scraped.csv", index=False)
 print("Scraping complete. Data saved to author_backlists_scraped.csv\n")
 
 # ----------------------- EXCEL BUILD PHASE -----------------------
@@ -56,8 +78,8 @@ headers = [
     "Genre", "Standalone/Series", "Other Notes"
 ]
 
-for author in scraped_df["Author"].dropna().unique():
-    author_data = scraped_df[scraped_df["Author"] == author]
+for author in full_data["Author"].dropna().unique():
+    author_data = full_data[full_data["Author"] == author]
     tab_name = author if len(author) <= 31 else author[:28] + "..."
     ws = wb.create_sheet(tab_name)
 
