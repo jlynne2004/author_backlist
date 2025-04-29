@@ -35,4 +35,4 @@ This Python script automatically scrapes authors' backlists from Goodreads and e
 
 ---
 
-**Built with ☕ and 📚 by [Your Name or Brand].**
+**Built with ☕ and 📚 by Plot Twists & Pivot Tables.**
