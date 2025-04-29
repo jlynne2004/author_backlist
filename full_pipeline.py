@@ -113,7 +113,7 @@ for author in full_data["Author"].dropna().unique():
     for idx, row_data in enumerate(author_data.itertuples(index=False), start=8):
         row_list = [
             row_data._1, row_data._2, row_data._3, row_data._4,
-            row_data._5, "", "", "", "", "", "", "", "", ""
+            row_data.__0, "", "", "", "", "", "", "", "", ""
         ]
         ws.append(row_list)
         for col_num in range(1, len(headers)+1):

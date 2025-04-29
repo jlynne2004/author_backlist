@@ -4,6 +4,11 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import time
+import pandas as pd
+
+# Load author names from your CSV
+author_df = pd.read_csv("announced_authors.csv")
+authors = author_df["Author Name"].dropna().tolist()
 
 # Headers to mimic a real browser visit
 headers = {
