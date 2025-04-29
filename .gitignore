@@ -1,0 +1,28 @@
+# Python standard
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.env
+.venv
+*.env
+*.venv
+
+# IDE/editor folders
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# MacOS/Linux stuff
+.DS_Store
+
+# Output files
+*.csv
+*.xlsx
+
+# Virtual environment folders
+venv/
+env/
+ENV/
