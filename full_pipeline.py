@@ -14,7 +14,7 @@ print("[1/2] Scraping Goodreads backlists...")
 # Load authors from your real convention CSV
 author_df = pd.read_csv("announced_authors.csv")
 author_df["Role"] = author_df.get("Role", "Author")  # Default to 'Author' if 'Role' column is missing
-author_df["Pen Names"] = author_df.get("Pen Names", "")  # Default to empty string if 'Pen Names' column is missing
+author_df["Other Names"] = author_df.get("Other Names", "")  # Default to empty string if 'Other Names' column is missing
 all_entries = author_df.drop_na(subset=["Author Name"]).to_dict(orient="records")
 
 # Load existing scraped data if it exists
@@ -34,7 +34,7 @@ new_books = []
 for entry in entries_to_scrape:
     author = entry["Author Name"]
     role = entry["Role"]
-    pen_names = [name.strip() for name in entry["Pen Names"].split(",") if name.strip()]
+    pen_names = [name.strip() for name in entry["Other Names"].split(",") if name.strip()]
     names_to_scrape = [author] + pen_names
 
     for pen_name in names_to_scrape:
@@ -44,7 +44,7 @@ for entry in entries_to_scrape:
             books = scrape_goodreads_books(author_url)
             for book in books:
                 book["Author"] = author
-                book["Pen Name"] = pen_name
+                book["Other Name"] = pen_name
                 book["Role"] = role
             new_books.extend(books)
         time.sleep(2)
@@ -83,7 +83,7 @@ headers = [
     "Book Title", "Series Title", "Series Order", "Published Date",
     "Formats Available", "Buy Links", "Rent Links", "Audiobook (Y/N)",
     "Narrators", "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)",
-    "Genre", "Standalone/Series", "Other Notes", "Pen Name", "Book Role"
+    "Genre", "Standalone/Series", "Other Notes", "Other Name", "Book Role"
 ]
 
 for person in full_data["Author"].dropna().unique():
@@ -130,7 +130,7 @@ for person in full_data["Author"].dropna().unique():
             book_role = "Narrator"
         else:
             book_role = "Author"
-            
+
         row_list = [
             row_data.Book_Title,
             row_data.Series_Title,
