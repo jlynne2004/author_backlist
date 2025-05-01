@@ -59,7 +59,7 @@ default_sheet = wb.active
 wb.remove(default_sheet)
 
 dashboard = wb.create_sheet("Dashboard")
-dashboard.append(["Author Name", "Link to Tab"])
+dashboard.append([author,f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
 
 hot_pink_fill = PatternFill(start_color="EC008C", end_color="EC008C", fill_type="solid")
 black_font_bold = Font(color="000000", bold=True)
@@ -112,8 +112,20 @@ for author in full_data["Author"].dropna().unique():
 
     for idx, row_data in enumerate(author_data.itertuples(index=False), start=8):
         row_list = [
-            row_data._1, row_data._2, row_data._3, row_data._4,
-            row_data._0, "", "", "", "", "", "", "", "", ""
+            row_data.Book_Title,
+            row_data.Series_Title,
+            row_data.Series_Order,
+            row_data.Published_Date,
+            row_data.Formats_Available,
+            row_data.Buy_Links,
+            row_data.Rent_Links,
+            row_data.Audiobook_YN,
+            row_data.Narrators,
+            row_data.Kindle_Unlimited_YN,
+            row_data.Kobo_YN,
+            row_data.Genre,
+            row_data.Standalone_Series,
+            row_data.Other_Notes
         ]
         ws.append(row_list)
         for col_num in range(1, len(headers)+1):
@@ -124,7 +136,7 @@ for author in full_data["Author"].dropna().unique():
             if col_num == 4:
                 cell.number_format = 'MM/DD/YYYY'
 
-    dashboard.append([author, f"='{tab_name}'!A1"])
+    dashboard.append([author,f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
 
 for col in range(1, 3):
     cell = dashboard.cell(row=1, column=col)
