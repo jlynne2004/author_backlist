@@ -1,10 +1,11 @@
-# fetch_author_links.py
+# fetch_author_links.py (updated for DuckDuckGo redirects + verified fix)
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import time
 import re
+from urllib.parse import unquote, urlparse, parse_qs
 
 # DuckDuckGo search helper
 HEADERS = {
@@ -24,17 +25,16 @@ def find_best_match(links, domain):
             return link
     return ""
 
-from urllib.parse import unquote, urlparse, parse_qs
-
 def clean_link(link):
-    # Check if it's a DuckDuckGo redirect
     if "duckduckgo.com/l/?" in link and "uddg=" in link:
         parsed = urlparse(link)
         qs = parse_qs(parsed.query)
         if "uddg" in qs:
             return unquote(qs["uddg"][0])
-    # Otherwise, return the link minus query/hash
-    return re.sub(r'(\\?.*)|(\\#.*)', '', link)
+    return re.sub(r'(\?.*)|(\#.*)', '', link)
+
+def is_valid_url(url):
+    return isinstance(url, str) and url.startswith("http")
 
 # Load the CSV
 df = pd.read_csv("announced_authors.csv")
@@ -52,7 +52,6 @@ for idx, row in df.iterrows():
     name = row["Author Name"]
     print(f"Searching links for {name}...")
 
-    # Build all three queries
     queries = {
         "Website": f"{name} official site",
         "Amazon Page": f"{name} Amazon author",
@@ -61,32 +60,32 @@ for idx, row in df.iterrows():
 
     links_found = {}
     for key, query in queries.items():
-        results = search_duckduckgo(query)
-        match = ""
-        if key == "Website":
-            # Avoid known domains — prefer personal sites
-            match = next((l for l in results if not any(x in l for x in ["amazon.com", "goodreads.com", "facebook.com", "twitter.com", "instagram.com"])), "")
-        elif key == "Amazon Page":
-            match = find_best_match(results, "amazon.com")
-        elif key == "Goodreads Page":
-            match = find_best_match(results, "goodreads.com")
-        links_found[key] = clean_link(match)
+        try:
+            results = search_duckduckgo(query)
+            match = ""
+            if key == "Website":
+                match = next((l for l in results if not any(x in l for x in ["amazon.com", "goodreads.com", "facebook.com", "twitter.com", "instagram.com"])), "")
+            elif key == "Amazon Page":
+                match = find_best_match(results, "amazon.com")
+            elif key == "Goodreads Page":
+                match = find_best_match(results, "goodreads.com")
+            links_found[key] = clean_link(match)
+        except Exception as e:
+            print(f"Error searching for {key} of {name}: {e}")
+            links_found[key] = ""
         time.sleep(1)
 
     df.at[idx, "Website"] = links_found["Website"] or df.at[idx, "Website"]
     df.at[idx, "Amazon Page"] = links_found["Amazon Page"] or df.at[idx, "Amazon Page"]
     df.at[idx, "Goodreads Page"] = links_found["Goodreads Page"] or df.at[idx, "Goodreads Page"]
 
-    # More reliable check — make sure all 3 fields are actual URLs
-    def is_valid_url(url):
-        return isinstance(url, str) and url.startswith("http")
-
-
     if all(is_valid_url(df.at[idx, col]) for col in ["Website", "Amazon Page", "Goodreads Page"]):
         df.at[idx, "Verified"] = "Yes"
     else:
         df.at[idx, "Verified"] = "No"
 
+    print(f"✅ {name}: Verified = {df.at[idx, 'Verified']}")
+    time.sleep(2)
 
 # Save the updated file
 df.to_csv("announced_authors.csv", index=False)
