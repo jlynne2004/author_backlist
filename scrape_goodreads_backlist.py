@@ -64,11 +64,23 @@ def scrape_goodreads_books(author_url):
         formats = "Ebook, Paperback, Audiobook"  # Default assumption
 
         books.append({
+            "Author": author,
             "Book Title": title,
             "Series Title": series_title,
             "Series Order": series_order,
             "Published Date": pub_date,
-            "Formats Available": formats
+            "Formats Available": formats,
+            "Buy Links": "",  # Placeholder for buy links
+            "Rent Links": "",  # Placeholder for rent links
+            "Audiobook (Y/N)": "Y" if formats and "Audiobook" in formats else "N",
+            "Narrators": "",  # Placeholder for narrators
+            "Kindle Unlimited (Y/N)": "",  # Placeholder for Kindle Unlimited
+            "Kobo+ (Y/N)": "",  # Placeholder for Kobo+
+            "Genre": "",  # Placeholder for genre
+            "Standalone/Series": "Series" if series_title else "Standalone",
+            "Other Notes": "",  # Placeholder for other notes
+            "Pen Name": "",  # Placeholder for pen name
+            "Book Role": "Author"  # Default role
         })
 
     return books

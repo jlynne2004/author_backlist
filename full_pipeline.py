@@ -134,7 +134,8 @@ for person in full_data["Author"].dropna().unique():
 
     for idx, row_data in enumerate(person_data.itertuples(index=False), start=8):
         person_name = person.strip().lower()
-        narrators = getattr(row_data, "Narrators", "").lower()
+        narrators_raw = getattr(row_data, "Narrators", "")
+        narrators = str(narrators_raw).lower()
 
         if person_name in narrators and role.lower() == "author":
             book_role = "Author & Narrator"
