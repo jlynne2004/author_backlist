@@ -83,7 +83,7 @@ headers = [
     "Book Title", "Series Title", "Series Order", "Published Date",
     "Formats Available", "Buy Links", "Rent Links", "Audiobook (Y/N)",
     "Narrators", "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)",
-    "Genre", "Standalone/Series", "Other Notes", "Pen Name"
+    "Genre", "Standalone/Series", "Other Notes", "Pen Name", "Book Role"
 ]
 
 for person in full_data["Author"].dropna().unique():
@@ -121,6 +121,16 @@ for person in full_data["Author"].dropna().unique():
         cell.border = thin_border
 
     for idx, row_data in enumerate(person_data.itertuples(index=False), start=8):
+        person_name = person.strip().lower()
+        narrators = getattr(row_data, "Narrators", "").lower()
+
+        if person_name in narrators and role.lower() == "author":
+            book_role = "Author & Narrator"
+        elif person_name in narrators:
+            book_role = "Narrator"
+        else:
+            book_role = "Author"
+            
         row_list = [
             row_data.Book_Title,
             row_data.Series_Title,
@@ -136,7 +146,8 @@ for person in full_data["Author"].dropna().unique():
             getattr(row_data, "Genre", ""),
             getattr(row_data, "Standalone/Series", ""),
             getattr(row_data, "Other_Notes", ""),
-            getattr(row_data, "Pen_Name", "")
+            getattr(row_data, "Pen_Name", ""),
+            book_role
         ]
         ws.append(row_list)
         for col_num in range(1, len(headers)+1):
