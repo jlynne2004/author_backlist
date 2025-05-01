@@ -64,7 +64,7 @@ def scrape_goodreads_books(author_url, name, role, pen_name):
         formats = "Ebook, Paperback, Audiobook"  # Default assumption
 
         books.append({
-            "Author": author,
+            "Author": name,
             "Book Title": title,
             "Series Title": series_title,
             "Series Order": series_order,
