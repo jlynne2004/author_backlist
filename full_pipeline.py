@@ -13,7 +13,8 @@ print("[1/2] Scraping Goodreads backlists...")
 
 # Load authors from your real convention CSV
 author_df = pd.read_csv("announced_authors.csv")
-all_authors = author_df["Author Name"].dropna().tolist()
+author_df['Role'] = author_df.get('Role', 'Author')  # Default to 'Author' if 'Role' column is missing
+all_entries = author_df.drop_na(subset=["Author Name"]).to_dict(orient="records")
 
 # Load existing scraped data if it exists
 if os.path.exists("author_backlists_scraped.csv"):
@@ -24,19 +25,21 @@ else:
     existing_data = pd.DataFrame()
     scraped_authors = []
 
-# Determine which authors still need to be scraped
-authors_to_scrape = [author for author in all_authors if author not in scraped_authors]
-
-print(f"Authors to scrape: {authors_to_scrape}\n")
+# Determine which entries still need to be scraped
+entries_to_scrape = [entry for entry in all_entries if entry["Author Name"] not in scraped_authors]
+print(f"Entries to scrape: {[e['Author Name'] for e in entries_to_scrape]}")
 
 new_books = []
-for author in authors_to_scrape:
-    print(f"Scraping {author}...")
+for entry in entries_to_scrape:
+    author = entry["Author Name"]
+    role = entry["Role"]    
+    print(f"Scraping {author} ({role})...")
     author_url = search_goodreads_author(author)
     if author_url:
         books = scrape_goodreads_books(author_url)
         for book in books:
             book["Author"] = author
+            book["Role"] = role
         new_books.extend(books)
     time.sleep(2)
 
@@ -77,14 +80,15 @@ headers = [
     "Genre", "Standalone/Series", "Other Notes"
 ]
 
-for author in full_data["Author"].dropna().unique():
-    author_data = full_data[full_data["Author"] == author]
-    tab_name = author if len(author) <= 31 else author[:28] + "..."
+for person in full_data["Author"].dropna().unique():
+    person_data = full_data[full_data["Author"] == person]
+    role =  person_data["Role"].iloc[0] if "Role" in person_data else "Author"
+    tab_name = person if len(person) <= 31 else person[:28] + "..."
     dashboard.append([author,f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
     ws = wb.create_sheet(tab_name)
 
     ws.merge_cells('A1:B1')
-    ws['A1'] = f"Connect with {author}"
+    ws['A1'] = f"Connect with {person}"
     ws['A1'].alignment = Alignment(horizontal='left')
     ws['A1'].font = black_font_bold
     ws['A1'].fill = hot_pink_fill
@@ -110,22 +114,22 @@ for author in full_data["Author"].dropna().unique():
         cell.alignment = Alignment(horizontal='center')
         cell.border = thin_border
 
-    for idx, row_data in enumerate(author_data.itertuples(index=False), start=8):
+    for idx, row_data in enumerate(person_data.itertuples(index=False), start=8):
         row_list = [
             row_data.Book_Title,
             row_data.Series_Title,
             row_data.Series_Order,
             row_data.Published_Date,
             row_data.Formats_Available,
-            row_data.Buy_Links,
-            row_data.Rent_Links,
-            row_data.Audiobook_YN,
-            row_data.Narrators,
-            row_data.Kindle_Unlimited_YN,
-            row_data.Kobo_YN,
-            row_data.Genre,
-            row_data.Standalone_Series,
-            row_data.Other_Notes
+            getattr(row_data, "Buy_Links", ""),
+            getattr(row_data, "Rent_Links", ""),
+            getattr(row_data, "Audiobook_(Y/N)", "Y"),
+            getattr(row_data, "Narrators",   ""),
+            getattr(row_data, "Kindle_Unlimited_(Y/N)", ""),
+            getattr(row_data, "Kobo+_(Y/N)", ""),
+            getattr(row_data, "Genre", ""),
+            getattr(row_data, "Standalone/Series", ""),
+            getattr(row_data, "Other_Notes", "")
         ]
         ws.append(row_list)
         for col_num in range(1, len(headers)+1):
