@@ -1,19 +1,32 @@
-# fetch_author_links.py (now with retry logic and timeout handling)
+# fetch_author_links.py (DuckDuckGo mirror + cache support)
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import time
 import re
+import json
+import os
 from urllib.parse import unquote, urlparse, parse_qs
 
-# DuckDuckGo search helper
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
 }
+CACHE_FILE = "link_cache.json"
+
+# Load existing cache
+if os.path.exists(CACHE_FILE):
+    with open(CACHE_FILE, "r", encoding="utf-8") as f:
+        link_cache = json.load(f)
+else:
+    link_cache = {}
+
+def save_cache():
+    with open(CACHE_FILE, "w", encoding="utf-8") as f:
+        json.dump(link_cache, f, indent=2)
 
 def search_duckduckgo(query, retries=3):
-    url = f"https://html.duckduckgo.com/html/?q={query.replace(' ', '+')}"
+    url = f"https://duckduckgo.com/html/?q={query.replace(' ', '+')}"
     for attempt in range(retries):
         try:
             resp = requests.get(url, headers=HEADERS, timeout=10)
@@ -52,11 +65,19 @@ df["Goodreads Page"] = df.get("Goodreads Page", "")
 df["Verified"] = df.get("Verified", "No")
 
 for idx, row in df.iterrows():
-    if row["Verified"] == "Yes":
-        continue  # Skip verified rows
-
     name = row["Author Name"]
-    print(f"Searching links for {name}...")
+    if row["Verified"] == "Yes":
+        continue
+
+    if name in link_cache:
+        cached = link_cache[name]
+        df.at[idx, "Website"] = cached.get("Website", "")
+        df.at[idx, "Amazon Page"] = cached.get("Amazon Page", "")
+        df.at[idx, "Goodreads Page"] = cached.get("Goodreads Page", "")
+        print(f"✅ Loaded from cache: {name}")
+        continue
+
+    print(f"🔍 Searching links for {name}...")
 
     queries = {
         "Website": f"{name} official site",
@@ -90,12 +111,18 @@ for idx, row in df.iterrows():
     else:
         df.at[idx, "Verified"] = "No"
 
+    link_cache[name] = {
+        "Website": df.at[idx, "Website"],
+        "Amazon Page": df.at[idx, "Amazon Page"],
+        "Goodreads Page": df.at[idx, "Goodreads Page"]
+    }
     print(f"✅ {name}: Verified = {df.at[idx, 'Verified']}")
     time.sleep(2)
 
-# Save the updated file
+# Save the updated CSV
 try:
     df.to_csv("announced_authors.csv", index=False)
     print("\n🔗 Author/narrator links updated in announced_authors.csv")
+    save_cache()
 except PermissionError:
     print("⚠️ Could not write to announced_authors.csv — is it still open in Excel?")
