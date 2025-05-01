@@ -41,8 +41,10 @@ for idx, row in author_df.iterrows():
         continue  # already scraped
 
     role = str(row.get("Role", "")).strip() or "Author"
-    other_names_raw = str(row.get("Other Names", "") or "")
-    pen_names = [n.strip() for n in other_names_raw.split(",") if n.strip()]
+    other_names_raw = row.get("Other Names")
+    if pd.isna(other_names_raw):
+        other_names_raw = ""
+    pen_names = [n.strip() for n in str(other_names_raw).split(",") if n.strip()]
 
     names_to_scrape = [name] + pen_names
 
