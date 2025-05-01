@@ -34,7 +34,8 @@ new_books = []
 for entry in entries_to_scrape:
     author = entry["Author Name"]
     role = entry["Role"]
-    pen_names = [name.strip() for name in entry["Other Names"].split(",") if name.strip()]
+    pen_names_raw = entry.get("Other Names", "") or ""
+    pen_names = [name.strip() for name in str(pen_names_raw).split(",") if name.strip()]
     names_to_scrape = [author] + pen_names
 
     for pen_name in names_to_scrape:
