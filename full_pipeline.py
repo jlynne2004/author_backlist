@@ -80,7 +80,7 @@ thin_border = Border(
 )
 
 headers = [
-    "Book Title", "Series Title", "Series Order", "Published Date",
+    "Author","Book Title", "Series Title", "Series Order", "Published Date",
     "Formats Available", "Buy Links", "Rent Links", "Audiobook (Y/N)",
     "Narrators", "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)",
     "Genre", "Standalone/Series", "Other Notes", "Other Name", "Book Role"
@@ -132,6 +132,7 @@ for person in full_data["Author"].dropna().unique():
             book_role = "Author"
 
         row_list = [
+            row_data.Author,
             row_data.Book_Title,
             row_data.Series_Title,
             row_data.Series_Order,
