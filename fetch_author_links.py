@@ -24,8 +24,17 @@ def find_best_match(links, domain):
             return link
     return ""
 
+from urllib.parse import unquote, urlparse, parse_qs
+
 def clean_link(link):
-    return re.sub(r'(\?.*)|(\#.*)', '', link)  # Strip URL params/fragments
+    # Check if it's a DuckDuckGo redirect
+    if "duckduckgo.com/l/?" in link and "uddg=" in link:
+        parsed = urlparse(link)
+        qs = parse_qs(parsed.query)
+        if "uddg" in qs:
+            return unquote(qs["uddg"][0])
+    # Otherwise, return the link minus query/hash
+    return re.sub(r'(\\?.*)|(\\#.*)', '', link)
 
 # Load the CSV
 df = pd.read_csv("announced_authors.csv")
@@ -68,12 +77,15 @@ for idx, row in df.iterrows():
     df.at[idx, "Amazon Page"] = links_found["Amazon Page"] or df.at[idx, "Amazon Page"]
     df.at[idx, "Goodreads Page"] = links_found["Goodreads Page"] or df.at[idx, "Goodreads Page"]
 
-    # Mark as verified if all three are filled
-    if all(df.at[idx, col] for col in ["Website", "Amazon Page", "Goodreads Page"]):
-        df.at[idx, "Verified"] = "Yes"
+    # More reliable check — make sure all 3 fields are actual URLs
+    def is_valid_url(url):
+        return url and url.startswith("http")
 
-    print(f"✅ {name}: Verified = {df.at[idx, 'Verified']}")
-    time.sleep(2)  # Be gentle to DuckDuckGo
+    if all(is_valid_url(df.at[idx, col]) for col in ["Website", "Amazon Page", "Goodreads Page"]):
+        df.at[idx, "Verified"] = "Yes"
+    else:
+        df.at[idx, "Verified"] = "No"
+
 
 # Save the updated file
 df.to_csv("announced_authors.csv", index=False)
