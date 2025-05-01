@@ -132,10 +132,12 @@ for person in full_data["Author"].dropna().unique():
         cell.alignment = Alignment(horizontal='center')
         cell.border = thin_border
 
-    for idx, row_data in enumerate(person_data.itertuples(index=False), start=8):
+    for idx, row_data in person_data.iterrows():
         person_name = person.strip().lower()
-        narrators_raw = getattr(row_data, "Narrators", "")
+        narrators_raw = row_data.get("Narrators", "")
         narrators = str(narrators_raw).lower()
+        if narrators == "nan":
+            narrators = ""
 
         if person_name in narrators and role.lower() == "author":
             book_role = "Author & Narrator"
@@ -144,33 +146,36 @@ for person in full_data["Author"].dropna().unique():
         else:
             book_role = "Author"
 
-        row_list = [
-            row_data.Author,
-            row_data.Book_Title,
-            row_data.Series_Title,
-            row_data.Series_Order,
-            row_data.Published_Date,
-            row_data.Formats_Available,
-            getattr(row_data, "Buy_Links", ""),
-            getattr(row_data, "Rent_Links", ""),
-            getattr(row_data, "Audiobook_(Y/N)", "Y"),
-            getattr(row_data, "Narrators",   ""),
-            getattr(row_data, "Kindle_Unlimited_(Y/N)", ""),
-            getattr(row_data, "Kobo+_(Y/N)", ""),
-            getattr(row_data, "Genre", ""),
-            getattr(row_data, "Standalone/Series", ""),
-            getattr(row_data, "Other_Notes", ""),
-            getattr(row_data, "Pen_Name", ""),
-            book_role
-        ]
-        ws.append(row_list)
-        for col_num in range(1, len(headers)+1):
-            cell = ws[f'{get_column_letter(col_num)}{idx}']
-            if idx % 2 == 1:
-                cell.fill = gray_fill
-            cell.border = thin_border
-            if col_num == 4:
-                cell.number_format = 'MM/DD/YYYY'
+    row_list = [
+        row_data.get("Author", ""),
+        row_data.get("Book Title", ""),
+        row_data.get("Series Title", ""),
+        row_data.get("Series Order", ""),
+        row_data.get("Published Date", ""),
+        row_data.get("Formats Available", ""),
+        row_data.get("Buy Links", ""),
+        row_data.get("Rent Links", ""),
+        row_data.get("Audiobook (Y/N)", ""),
+        row_data.get("Narrators", ""),
+        row_data.get("Kindle Unlimited (Y/N)", ""),
+        row_data.get("Kobo+ (Y/N)", ""),
+        row_data.get("Genre", ""),
+        row_data.get("Standalone/Series", ""),
+        row_data.get("Other Notes", ""),
+        row_data.get("Pen Name", ""),
+        book_role
+    ]
+
+    ws.append(row_list)
+
+    for col_num in range(1, len(headers) + 1):
+        cell = ws[f"{get_column_letter(col_num)}{idx + 1}"]
+        if idx % 2 == 1:
+            cell.fill = gray_fill
+        cell.border = thin_border
+        if col_num == 5:  # Published Date column
+            cell.number_format = "MM/DD/YYYY"
+
 
     dashboard.append([person, role, f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
 
