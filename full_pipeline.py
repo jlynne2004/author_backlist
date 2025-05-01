@@ -31,24 +31,33 @@ entries_to_scrape = [entry for entry in all_entries if entry["Author Name"] not 
 print(f"Entries to scrape: {[e['Author Name'] for e in entries_to_scrape]}")
 
 new_books = []
-for entry in entries_to_scrape:
-    author = entry["Author Name"]
-    role = entry["Role"]
-    pen_names_raw = entry.get("Other Names", "") or ""
-    pen_names = [name.strip() for name in str(pen_names_raw).split(",") if name.strip()]
-    names_to_scrape = [author] + pen_names
+for idx, row in author_df.iterrows():
+    name = str(row.get("Author Name", "")).strip()
+    if not name or name.lower() == "nan":
+        print(f"⚠️  Skipping row {idx} — missing Author Name")
+        continue
+
+    if name in scraped_authors:
+        continue  # already scraped
+
+    role = str(row.get("Role", "")).strip() or "Author"
+    other_names_raw = str(row.get("Other Names", "") or "")
+    pen_names = [n.strip() for n in other_names_raw.split(",") if n.strip()]
+
+    names_to_scrape = [name] + pen_names
 
     for pen_name in names_to_scrape:
-        print(f"Scraping {pen_name} for {author} ({role})...")
+        print(f"🔍 Scraping {pen_name} for {name} ({role})...")
         author_url = search_goodreads_author(pen_name)
         if author_url:
             books = scrape_goodreads_books(author_url)
             for book in books:
-                book["Author"] = author
-                book["Other Name"] = pen_name
+                book["Author"] = name
+                book["Pen Name"] = pen_name
                 book["Role"] = role
             new_books.extend(books)
         time.sleep(2)
+    print(f"✅ Finished scraping {name}")
 
 # Merge new data with existing data
 if new_books:
