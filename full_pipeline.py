@@ -59,7 +59,6 @@ default_sheet = wb.active
 wb.remove(default_sheet)
 
 dashboard = wb.create_sheet("Dashboard")
-dashboard.append([author,f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
 
 hot_pink_fill = PatternFill(start_color="EC008C", end_color="EC008C", fill_type="solid")
 black_font_bold = Font(color="000000", bold=True)
@@ -81,6 +80,7 @@ headers = [
 for author in full_data["Author"].dropna().unique():
     author_data = full_data[full_data["Author"] == author]
     tab_name = author if len(author) <= 31 else author[:28] + "..."
+    dashboard.append([author,f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
     ws = wb.create_sheet(tab_name)
 
     ws.merge_cells('A1:B1')
