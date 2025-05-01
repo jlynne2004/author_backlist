@@ -1,4 +1,4 @@
-# fetch_author_links.py (updated for DuckDuckGo redirects + verified fix)
+# fetch_author_links.py (now with retry logic and timeout handling)
 
 import pandas as pd
 import requests
@@ -12,12 +12,18 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
 }
 
-def search_duckduckgo(query):
+def search_duckduckgo(query, retries=3):
     url = f"https://html.duckduckgo.com/html/?q={query.replace(' ', '+')}"
-    resp = requests.get(url, headers=HEADERS)
-    soup = BeautifulSoup(resp.text, 'html.parser')
-    results = soup.find_all("a", attrs={"class": "result__a"})
-    return [link.get("href") for link in results if link.get("href")]
+    for attempt in range(retries):
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=10)
+            soup = BeautifulSoup(resp.text, 'html.parser')
+            results = soup.find_all("a", attrs={"class": "result__a"})
+            return [link.get("href") for link in results if link.get("href")]
+        except requests.exceptions.RequestException as e:
+            print(f"Retry {attempt + 1} failed for query: {query} — {e}")
+            time.sleep(5)
+    return []
 
 def find_best_match(links, domain):
     for link in links:
@@ -88,5 +94,8 @@ for idx, row in df.iterrows():
     time.sleep(2)
 
 # Save the updated file
-df.to_csv("announced_authors.csv", index=False)
-print("\n🔗 Author/narrator links updated in announced_authors.csv")
+try:
+    df.to_csv("announced_authors.csv", index=False)
+    print("\n🔗 Author/narrator links updated in announced_authors.csv")
+except PermissionError:
+    print("⚠️ Could not write to announced_authors.csv — is it still open in Excel?")
