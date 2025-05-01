@@ -79,7 +79,8 @@ for idx, row in df.iterrows():
 
     # More reliable check — make sure all 3 fields are actual URLs
     def is_valid_url(url):
-        return url and url.startswith("http")
+        return isinstance(url, str) and url.startswith("http")
+
 
     if all(is_valid_url(df.at[idx, col]) for col in ["Website", "Amazon Page", "Goodreads Page"]):
         df.at[idx, "Verified"] = "Yes"
