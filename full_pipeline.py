@@ -13,7 +13,8 @@ print("[1/2] Scraping Goodreads backlists...")
 
 # Load authors from your real convention CSV
 author_df = pd.read_csv("announced_authors.csv")
-author_df['Role'] = author_df.get('Role', 'Author')  # Default to 'Author' if 'Role' column is missing
+author_df["Role"] = author_df.get("Role", "Author")  # Default to 'Author' if 'Role' column is missing
+author_df["Pen Names"] = author_df.get("Pen Names", "")  # Default to empty string if 'Pen Names' column is missing
 all_entries = author_df.drop_na(subset=["Author Name"]).to_dict(orient="records")
 
 # Load existing scraped data if it exists
@@ -32,16 +33,21 @@ print(f"Entries to scrape: {[e['Author Name'] for e in entries_to_scrape]}")
 new_books = []
 for entry in entries_to_scrape:
     author = entry["Author Name"]
-    role = entry["Role"]    
-    print(f"Scraping {author} ({role})...")
-    author_url = search_goodreads_author(author)
-    if author_url:
-        books = scrape_goodreads_books(author_url)
-        for book in books:
-            book["Author"] = author
-            book["Role"] = role
-        new_books.extend(books)
-    time.sleep(2)
+    role = entry["Role"]
+    pen_names = [name.strip() for name in entry["Pen Names"].split(",") if name.strip()]
+    names_to_scrape = [author] + pen_names
+
+    for pen_name in names_to_scrape:
+        print(f"Scraping {pen_name} for {author} ({role})...")
+        author_url = search_goodreads_author(pen_name)
+        if author_url:
+            books = scrape_goodreads_books(author_url)
+            for book in books:
+                book["Author"] = author
+                book["Pen Name"] = pen_name
+                book["Role"] = role
+            new_books.extend(books)
+        time.sleep(2)
 
 # Merge new data with existing data
 if new_books:
@@ -77,7 +83,7 @@ headers = [
     "Book Title", "Series Title", "Series Order", "Published Date",
     "Formats Available", "Buy Links", "Rent Links", "Audiobook (Y/N)",
     "Narrators", "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)",
-    "Genre", "Standalone/Series", "Other Notes"
+    "Genre", "Standalone/Series", "Other Notes", "Pen Name"
 ]
 
 for person in full_data["Author"].dropna().unique():
@@ -100,7 +106,7 @@ for person in full_data["Author"].dropna().unique():
     ws['B2'] = ""
     ws['A3'] = "📚 Goodreads"
     ws['B3'] = ""
-    ws['A4'] = "🛒 Amazon"
+    ws['A4'] = "🛒 Amazon/Audible"
     ws['B4'] = ""
 
     ws.append([])
@@ -129,7 +135,8 @@ for person in full_data["Author"].dropna().unique():
             getattr(row_data, "Kobo+_(Y/N)", ""),
             getattr(row_data, "Genre", ""),
             getattr(row_data, "Standalone/Series", ""),
-            getattr(row_data, "Other_Notes", "")
+            getattr(row_data, "Other_Notes", ""),
+            getattr(row_data, "Pen_Name", "")
         ]
         ws.append(row_list)
         for col_num in range(1, len(headers)+1):
