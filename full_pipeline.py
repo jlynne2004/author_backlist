@@ -100,7 +100,7 @@ for person in full_data["Author"].dropna().unique():
     person_data = full_data[full_data["Author"] == person]
     role =  person_data["Role"].iloc[0] if "Role" in person_data else "Author"
     tab_name = person if len(person) <= 31 else person[:28] + "..."
-    dashboard.append([author,f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
+    dashboard.append([author_df,f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
     ws = wb.create_sheet(tab_name)
 
     ws.merge_cells('A1:B1')
@@ -169,7 +169,7 @@ for person in full_data["Author"].dropna().unique():
             if col_num == 4:
                 cell.number_format = 'MM/DD/YYYY'
 
-    dashboard.append([author,f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
+    dashboard.append([author_df,f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
 
 for col in range(1, 3):
     cell = dashboard.cell(row=1, column=col)

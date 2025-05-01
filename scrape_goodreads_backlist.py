@@ -44,22 +44,20 @@ def scrape_goodreads_books(author_url):
         title = title_tag.text.strip() if title_tag else "Unknown Title"
 
         series_tag = book.select_one("span.greyText.smallText")
-        if series_tag:
+
+        series_title = ""
+        series_order = ""
+
+        if series_tag and "Series" in series_tag.text:
             series_info = series_tag.text.strip()
-            if '(' in series_info and ')' in series_info:
-                try:
-                    series_title, series_order = series_info.rsplit('(',1)
-                    series_title = series_title.replace('Series:','').strip()
-                    series_order = series_order.replace(')', '').replace('#', '').strip()
-                except ValueError:
-                    series_title = series_info
-                    series_order = ""
-            else:
-                series_title = series_info
+            try:
+                # Extract series name and order
+                series_title, series_order = series_info.replace("Series:", "").strip().rsplit("(", 1)
+                series_order = series_order.replace(")", "").replace("#", "").strip()
+                series_title = series_title.strip()
+            except ValueError:
+                series_title = series_info.strip()
                 series_order = ""
-        else:
-            series_title = ""
-            series_order = ""
 
         pub_date = ""  # Placeholder (can enhance later)
 
