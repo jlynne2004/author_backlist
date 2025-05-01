@@ -15,7 +15,7 @@ print("[1/2] Scraping Goodreads backlists...")
 author_df = pd.read_csv("announced_authors.csv")
 author_df["Role"] = author_df.get("Role", "Author")  # Default to 'Author' if 'Role' column is missing
 author_df["Other Names"] = author_df.get("Other Names", "")  # Default to empty string if 'Other Names' column is missing
-all_entries = author_df.drop_na(subset=["Author Name"]).to_dict(orient="records")
+all_entries = author_df.dropna(subset=["Author Name"]).to_dict(orient="records")
 
 # Load existing scraped data if it exists
 if os.path.exists("author_backlists_scraped.csv"):
