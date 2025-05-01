@@ -32,7 +32,7 @@ def search_goodreads_author(author_name):
         return None
 
 # Function to scrape books from author's Goodreads page
-def scrape_goodreads_books(author_url):
+def scrape_goodreads_books(author_url, name, role, pen_name):
     books = []
     response = requests.get(author_url, headers=headers)
     response.raise_for_status()

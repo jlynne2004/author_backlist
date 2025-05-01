@@ -52,7 +52,7 @@ for idx, row in author_df.iterrows():
         print(f"🔍 Scraping {pen_name} for {name} ({role})...")
         author_url = search_goodreads_author(pen_name)
         if author_url:
-            books = scrape_goodreads_books(author_url)
+            books = scrape_goodreads_books(author_url, name, role, pen_name)
             for book in books:
                 book["Author"] = name
                 book["Pen Name"] = pen_name
