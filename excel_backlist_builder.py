@@ -4,6 +4,7 @@ import pandas as pd
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
+import re
 
 # Load scraped data
 scraped_data = pd.read_csv("author_backlists_scraped.csv")
@@ -40,6 +41,7 @@ headers = [
 authors = scraped_data["Author"].dropna().unique()
 for author in authors:
     author_data = scraped_data[scraped_data["Author"] == author]
+    tab_name = re.sub(r'[\\/*?:"<>|]', '', author)  # Clean tab name
     tab_name = author if len(author) <= 31 else author[:28] + "..."
     ws = wb.create_sheet(tab_name)
 

@@ -80,6 +80,7 @@ default_sheet = wb.active
 wb.remove(default_sheet)
 
 dashboard = wb.create_sheet("Dashboard")
+dashboard.append(["Author", "Role", "Link"])
 
 hot_pink_fill = PatternFill(start_color="EC008C", end_color="EC008C", fill_type="solid")
 black_font_bold = Font(color="000000", bold=True)
@@ -99,8 +100,12 @@ headers = [
 ]
 
 for person in full_data["Author"].dropna().unique():
-    person_data = full_data[full_data["Author"] == person]
+    person_data = full_data[full_data["Author"].str.lower() == person.lower()]
     role =  person_data["Role"].iloc[0] if "Role" in person_data else "Author"
+    author_row = author_df[author_df["Author Name"] == person].iloc[0]
+    website_url = author_row.get("Website", "")
+    goodreads_url = author_row.get("Goodreads Page", "")
+    amazon_url = author_row.get("Amazon Page", "")
     tab_name = person if len(person) <= 31 else person[:28] + "..."
     dashboard.append([person, role, f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
     ws = wb.create_sheet(tab_name)
@@ -114,12 +119,21 @@ for person in full_data["Author"].dropna().unique():
     for row in range(1, 5):
         ws[f'A{row}'].border = thin_border
         ws[f'B{row}'].border = thin_border
-    ws['A2'] = "🌐 Website"
-    ws['B2'] = ""
-    ws['A3'] = "📚 Goodreads"
-    ws['B3'] = ""
-    ws['A4'] = "🛒 Amazon/Audible"
-    ws['B4'] = ""
+    ws["A2"] = "🌐 Website"
+    ws["B2"].value = "Author Website"
+    ws["B2"].hyperlink = website_url
+    ws["B2"].style = "Hyperlink"
+
+    ws["A3"] = "📚 Goodreads"
+    ws["B3"].value = "Goodreads Page"
+    ws["B3"].hyperlink = goodreads_url
+    ws["B3"].style = "Hyperlink"
+
+    ws["A4"] = "🛒 Amazon"
+    ws["B4"].value = "Amazon Page"
+    ws["B4"].hyperlink = amazon_url
+    ws["B4"].style = "Hyperlink"
+
 
     ws.append([])
     ws.append([])
