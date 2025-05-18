@@ -1,4 +1,4 @@
-# fetch_author_links.py (reverted to DuckDuckGo and improved for type safety + author filtering)
+# fetch_author_links.py (reverted to DuckDuckGo and improved for type safety + author filtering + stricter website logic)
 
 import pandas as pd
 import requests
@@ -55,6 +55,15 @@ def clean_link(link):
 def is_valid_url(url):
     return isinstance(url, str) and url.startswith("http")
 
+def name_in_domain(link, name):
+    try:
+        parsed = urlparse(link)
+        domain = parsed.netloc.lower()
+        name_parts = name.lower().split()
+        return any(part in domain for part in name_parts)
+    except:
+        return False
+
 # Load the CSV
 df = pd.read_csv("announced_authors.csv")
 
@@ -97,7 +106,7 @@ for idx, row in df.iterrows():
             results = search_duckduckgo(query)
             match = ""
             if key == "Website":
-                match = next((l for l in results if not any(x in l for x in ["amazon.com", "goodreads.com", "facebook.com", "twitter.com", "instagram.com"])), "")
+                match = next((l for l in results if not any(x in l for x in ["amazon.com", "goodreads.com", "facebook.com", "twitter.com", "instagram.com"]) and name_in_domain(l, name)), "")
             elif key == "Amazon Page":
                 match = find_best_match(results, "amazon.com")
             elif key == "Goodreads Page":
