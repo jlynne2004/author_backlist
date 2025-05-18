@@ -99,13 +99,17 @@ headers = [
     "Genre", "Standalone/Series", "Other Notes", "Other Name", "Book Role"
 ]
 
+def clean_url(value):
+    value = str(value).strip()
+    return "" if value.lower() == "nan" else value
+
 for person in full_data["Author"].dropna().unique():
     person_data = full_data[full_data["Author"].str.lower() == person.lower()]
     role =  person_data["Role"].iloc[0] if "Role" in person_data else "Author"
     author_row = author_df[author_df["Author Name"] == person].iloc[0]
-    website_url = author_row.get("Website", "")
-    goodreads_url = author_row.get("Goodreads Page", "")
-    amazon_url = author_row.get("Amazon Page", "")
+    website_url = clean_url(author_row.get("Website", ""))
+    goodreads_url = clean_url(author_row.get("Goodreads Page", ""))
+    amazon_url = clean_url(author_row.get("Amazon Page", ""))
     tab_name = person if len(person) <= 31 else person[:28] + "..."
     dashboard.append([person, role, f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
     ws = wb.create_sheet(tab_name)
