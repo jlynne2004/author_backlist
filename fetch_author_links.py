@@ -1,4 +1,4 @@
-# fetch_author_links.py (DuckDuckGo mirror + cache support)
+# fetch_author_links.py (reverted to DuckDuckGo and improved for type safety + author filtering)
 
 import pandas as pd
 import requests
@@ -26,7 +26,7 @@ def save_cache():
         json.dump(link_cache, f, indent=2)
 
 def search_duckduckgo(query, retries=3):
-    url = f"https://duckduckgo.com/html/?q={query.replace(' ', '+')}"
+    url = f"https://html.duckduckgo.com/html/?q={query.replace(' ', '+')}"
     for attempt in range(retries):
         try:
             resp = requests.get(url, headers=HEADERS, timeout=10)
@@ -50,7 +50,7 @@ def clean_link(link):
         qs = parse_qs(parsed.query)
         if "uddg" in qs:
             return unquote(qs["uddg"][0])
-    return re.sub(r'(\?.*)|(\#.*)', '', link)
+    return re.sub(r'(\?.*)|(\#.*)', '', str(link))
 
 def is_valid_url(url):
     return isinstance(url, str) and url.startswith("http")
@@ -58,14 +58,20 @@ def is_valid_url(url):
 # Load the CSV
 df = pd.read_csv("announced_authors.csv")
 
-# Ensure link columns exist
-df["Website"] = df.get("Website", "")
-df["Amazon Page"] = df.get("Amazon Page", "")
-df["Goodreads Page"] = df.get("Goodreads Page", "")
-df["Verified"] = df.get("Verified", "No")
+# Ensure link columns exist and cast to string
+for col in ["Website", "Amazon Page", "Goodreads Page", "Verified"]:
+    if col not in df.columns:
+        df[col] = ""
+    else:
+        df[col] = df[col].astype(str)
+
+df["Verified"] = df["Verified"].fillna("No")
 
 for idx, row in df.iterrows():
     name = row["Author Name"]
+    if not isinstance(name, str) or not name.strip():
+        continue
+
     if row["Verified"] == "Yes":
         continue
 
@@ -77,12 +83,12 @@ for idx, row in df.iterrows():
         print(f"✅ Loaded from cache: {name}")
         continue
 
-    print(f"🔍 Searching links for {name}...")
+    print(f"🔍 Searching links for {name} using DuckDuckGo...")
 
     queries = {
         "Website": f"{name} official site",
-        "Amazon Page": f"{name} Amazon author",
-        "Goodreads Page": f"{name} Goodreads author"
+        "Amazon Page": f"{name} Amazon author page",
+        "Goodreads Page": f"{name} Goodreads profile"
     }
 
     links_found = {}
@@ -102,9 +108,8 @@ for idx, row in df.iterrows():
             links_found[key] = ""
         time.sleep(1)
 
-    df.at[idx, "Website"] = links_found["Website"] or df.at[idx, "Website"]
-    df.at[idx, "Amazon Page"] = links_found["Amazon Page"] or df.at[idx, "Amazon Page"]
-    df.at[idx, "Goodreads Page"] = links_found["Goodreads Page"] or df.at[idx, "Goodreads Page"]
+    for col in ["Website", "Amazon Page", "Goodreads Page"]:
+        df.at[idx, col] = str(links_found[col] or df.at[idx, col])
 
     if all(is_valid_url(df.at[idx, col]) for col in ["Website", "Amazon Page", "Goodreads Page"]):
         df.at[idx, "Verified"] = "Yes"
