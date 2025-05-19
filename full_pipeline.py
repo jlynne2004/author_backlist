@@ -12,7 +12,7 @@ import time
 print("[1/2] Scraping Goodreads backlists...")
 
 # Load authors from your real convention CSV
-wb = load_workbook("announced_authors.csv")
+wb = load_workbook("announced_authors.xlsx")
 ws = wb.active
 
 data = []
@@ -29,8 +29,8 @@ for row in ws.iter_rows(min_row=2, values_only=False):
 author_df = pd.DataFrame(data)
 
 # Load existing scraped data if it exists
-if os.path.exists("author_backlists_scraped.csv"):
-    existing_data = pd.read_csv("author_backlists_scraped.csv")
+if os.path.exists("author_backlists_scraped.xlsx"):
+    existing_data = pd.read_xlsx("author_backlists_scraped.xlsx")
     scraped_authors = existing_data["Author"].dropna().unique().tolist()
     print(f"Found existing scraped data. {len(scraped_authors)} authors already scraped.")
 else:
@@ -38,7 +38,7 @@ else:
     scraped_authors = []
 
 # Determine which entries still need to be scraped
-entries_to_scrape = [entry for entry in all_entries if entry["Author Name"] not in scraped_authors]
+entries_to_scrape = [entry for entry in data if entry["Author Name"] not in scraped_authors]
 print(f"Entries to scrape: {[e['Author Name'] for e in entries_to_scrape]}")
 
 new_books = []
@@ -80,7 +80,7 @@ else:
     full_data = existing_data
 
 # Save updated data
-full_data.to_csv("author_backlists_scraped.csv", index=False)
+full_data.to_xlsx("author_backlists_scraped.xlsx", index=False)
 print("Scraping complete. Data saved to author_backlists_scraped.csv\n")
 
 # ----------------------- EXCEL BUILD PHASE -----------------------
@@ -121,15 +121,24 @@ else:
     if pen_name:
         headers.append("Pen Name")
 
-def clean_url(value):
+
+def clean_url(value: str) -> str:
+    """
+    Clean up a URL by adding the HTTPS protocol if it's not already there.
+
+    Args:
+        value (str): The URL to clean up.
+
+    Returns:
+        str: The cleaned up URL.
+    """
     value = str(value).strip()
     if value.lower() == "nan":
-        return ""
+        return ""  # Return empty string if value is NaN
     elif value.startswith("https://") or value.startswith("http://"):
-        return value
+        return value  # Return the value as is if it already has a protocol
     else:
-        return "https://" + value
-    #return "" if value.lower() == "nan" else value
+        return "https://" + value  # Add HTTPS protocol if it's not already there
 
 for person in full_data["Author"].dropna().unique():
     person_data = full_data[full_data["Author"].str.lower() == person.lower()]
