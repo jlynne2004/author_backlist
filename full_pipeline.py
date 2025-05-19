@@ -80,7 +80,7 @@ else:
     full_data = existing_data
 
 # Save updated data
-full_data.to_xlsx("author_backlists_scraped.xlsx", index=False)
+full_data.to_excel("author_backlists_scraped.xlsx", index=False)
 print("Scraping complete. Data saved to author_backlists_scraped.xlsx\n")
 
 # ----------------------- EXCEL BUILD PHASE -----------------------

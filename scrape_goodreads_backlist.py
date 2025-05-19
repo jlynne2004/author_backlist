@@ -109,6 +109,6 @@ if __name__ == "__main__":
     df = pd.DataFrame(all_books)
 
     # Save to xlsx
-    df.to_xlsx("author_backlists_scraped.xlsx", index=False)
+    df.to_excel("author_backlists_scraped.xlsx", index=False)
 
     print("Scraping completed! Data saved to author_backlists_scraped.xlsx")
