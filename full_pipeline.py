@@ -251,9 +251,14 @@ for row_idx in range(1, dashboard.max_row + 1):
         dashboard.cell(row=row_idx, column=col_idx).border = thin_border
 
 # Add support message to the right of the dashboard table
-support_col = 5
-support_row = 2
-support_message = (
+support_col_start = 5 # Column E
+support_col_end = 8 # Column H
+support_row_start = 2 
+support_row_end = support_row_start + 5 # Spread over 6 rows
+
+dashboard.merge_cells(start_row=support_row_start, start_column=support_col_start, end_row=support_row_end, end_column=support_col_end)
+cell = dashboard.cell(row=support_row_start, column=support_col_start)
+cell.value = (
     "💡 Support Authors Directly\n"
     "Whenever possible, consider purchasing books directly from the author's website if they have a store.\n"
     "Amazon takes a significant portion of royalties and can penalize authors for piracy and other issues beyond their control — even removing their accounts.\n\n"
@@ -261,11 +266,9 @@ support_message = (
     "But every direct purchase makes a bigger impact. 💖"
 )
 
-for i, line in enumerate(support_message.split("\n")):
-    cell = dashboard.cell(row=support_row + i, column=support_col)
-    cell.value = line
-    cell.alignment = Alignment(wrap_text=True, vertical='top', horizontal='left')
-    cell.font = Font(italic=True)
+cell.alignment = Alignment(horizontal='left', vertical='top', wrap_text=True)
+cell.font = Font(italic=True)
+cell.border = thin_border
 
 # Add a footer message
 footer_row = dashboard.max_row + 3

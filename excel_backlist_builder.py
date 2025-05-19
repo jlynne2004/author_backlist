@@ -90,7 +90,8 @@ for author in authors:
                 cell.number_format = 'MM/DD/YYYY'
 
     # Add to dashboard
-    dashboard.append([author, f"='{tab_name}'!A1"])
+    if [author, f"='{tab_name}'!A1"] not in dashboard:
+        dashboard.append([author, f"='{tab_name}'!A1"])
 
 # Style dashboard header
 for col in range(1, 3):
