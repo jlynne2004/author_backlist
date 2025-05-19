@@ -3,7 +3,7 @@
 import os
 from scrape_goodreads_backlist import search_goodreads_author, scrape_goodreads_books
 import pandas as pd
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 import time
@@ -12,10 +12,21 @@ import time
 print("[1/2] Scraping Goodreads backlists...")
 
 # Load authors from your real convention CSV
-author_df = pd.read_csv("announced_authors.csv")
-author_df["Role"] = author_df.get("Role", "Author")  # Default to 'Author' if 'Role' column is missing
-author_df["Other Names"] = author_df.get("Other Names", "")  # Default to empty string if 'Other Names' column is missing
-all_entries = author_df.dropna(subset=["Author Name"]).to_dict(orient="records")
+wb = load_workbook("announced_authors.csv")
+ws = wb.active
+
+data = []
+for row in ws.iter_rows(min_row=2, values_only=False):
+    author = row[0].value
+    role = row[1].value
+    other_names = row[2].value
+    website = row[3].hyperlink.target if row[3].hyperlink else ""
+    goodreads = row[4].hyperlink.target if row[4].hyperlink else ""
+    amazon = row[5].hyperlink.target if row[5].hyperlink else ""
+    audible = row[6].hyperlink.target if row[6].hyperlink else ""
+    data.append({"Author Name": author, "Role": role, "Other Names": other_names, "Website": website, "Goodreads Page": goodreads, "Amazon Page": amazon, "Audible Page": audible})
+
+author_df = pd.DataFrame(data)
 
 # Load existing scraped data if it exists
 if os.path.exists("author_backlists_scraped.csv"):
@@ -55,7 +66,7 @@ for idx, row in author_df.iterrows():
             books = scrape_goodreads_books(author_url, name, role, pen_name)
             for book in books:
                 book["Author"] = name
-                book["Pen Name"] = pen_name
+                book["Pen Name"] = pen_name if pen_name != name else ""
                 book["Role"] = role
             new_books.extend(books)
         time.sleep(2)
@@ -92,12 +103,23 @@ thin_border = Border(
     bottom=Side(style='thin', color='000000')
 )
 
-headers = [
-    "Author","Book Title", "Series Title", "Series Order", "Published Date",
-    "Formats Available", "Buy Links", "Rent Links", "Audiobook (Y/N)",
-    "Narrators", "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)",
-    "Genre", "Standalone/Series", "Other Notes", "Other Name", "Book Role"
-]
+if role == "Narrator":
+    headers = [
+        "Narrator","Book Title", "Series Title", "Author","Series Order", "Published Date",
+        "Genre", "Standalone/Series", "Other Notes", "Audiobook (Y/N)", 
+        "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)", 
+    ]
+    if pen_name:
+        headers.append("Pen Name")
+else:
+    headers = [
+        "Author", "Book Title", "Series Title", "Series Order", "Published Date",
+        "Formats Available", "Buy Links", "Rent Links", "Audiobook (Y/N)",
+        "Narrators", "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)",
+        "Genre", "Standalone/Series", "Other Notes", "Pen Name"
+    ]
+    if pen_name:
+        headers.append("Pen Name")
 
 def clean_url(value):
     value = str(value).strip()
@@ -116,6 +138,7 @@ for person in full_data["Author"].dropna().unique():
     website_url = clean_url(author_row.get("Website", ""))
     goodreads_url = clean_url(author_row.get("Goodreads Page", ""))
     amazon_url = clean_url(author_row.get("Amazon Page", ""))
+    audible_url = clean_url(author_row.get("Audible Page", ""))
     tab_name = person if len(person) <= 31 else person[:28] + "..."
     dashboard.append([person, role, f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
     ws = wb.create_sheet(tab_name)
@@ -144,6 +167,11 @@ for person in full_data["Author"].dropna().unique():
     ws["B4"].hyperlink = amazon_url
     ws["B4"].style = "Hyperlink"
 
+    ws["A5"] = "🎧 Audible"
+    ws["B5"].value = "Audible Page"
+    ws["B5"].hyperlink = audible_url
+    ws["B5"].style = "Hyperlink"
+
 
     ws.append([])
     ws.append([])
@@ -171,7 +199,7 @@ for person in full_data["Author"].dropna().unique():
             book_role = "Author"
 
     row_list = [
-        row_data.get("Author", ""),
+        row_data.get("Author", "") if role != "Narrator" else row_data.get("Narrator", ""),
         row_data.get("Book Title", ""),
         row_data.get("Series Title", ""),
         row_data.get("Series Order", ""),
@@ -186,8 +214,7 @@ for person in full_data["Author"].dropna().unique():
         row_data.get("Genre", ""),
         row_data.get("Standalone/Series", ""),
         row_data.get("Other Notes", ""),
-        row_data.get("Pen Name", ""),
-        book_role
+        row_data.get("Pen Name", "") if row_data.get("Pen Name","") != row_data.get("Author", "") else ""
     ]
 
     ws.append(row_list)
@@ -203,7 +230,7 @@ for person in full_data["Author"].dropna().unique():
 
     dashboard.append([person, role, f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
 
-for col in range(1, 3):
+for col in range(1, 4):
     cell = dashboard.cell(row=1, column=col)
     cell.fill = hot_pink_fill
     cell.font = black_font_bold
@@ -211,9 +238,27 @@ for col in range(1, 3):
     cell.border = thin_border
 
 for row_idx in range(1, dashboard.max_row + 1):
-    for col_idx in range(1, 3):
+    for col_idx in range(1, 4):
         dashboard.cell(row=row_idx, column=col_idx).border = thin_border
 
+# Add support message to the right of the dashboard table
+support_col = 5
+support_row = 2
+support_message = (
+    "💡 Support Authors Directly\n"
+    "Whenever possible, consider purchasing books directly from the author's website if they have a store.\n"
+    "Amazon takes a significant portion of royalties and can penalize authors for piracy and other issues beyond their control — even removing their accounts.\n\n"
+    "We understand that Amazon is convenient and affordable, and authors still rely on it.\n"
+    "But every direct purchase makes a bigger impact. 💖"
+)
+
+for i, line in enumerate(support_message.split("\n")):
+    cell = dashboard.cell(row=support_row + i, column=support_col)
+    cell.value = line
+    cell.alignment = Alignment(wrap_text=True, vertical='top', horizontal='left')
+    cell.font = Font(italic=True)
+
+# Add a footer message
 footer_row = dashboard.max_row + 3
 footer_text = "Compiled for Charm City Romanticon 2026 by Plot Twists & Pivot Tables"
 dashboard.merge_cells(start_row=footer_row, start_column=1, end_row=footer_row, end_column=2)
