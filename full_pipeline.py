@@ -11,7 +11,7 @@ import time
 # ----------------------- SCRAPE PHASE -----------------------
 print("[1/2] Scraping Goodreads backlists...")
 
-# Load authors from your real convention CSV
+# Load authors from your real convention xlsx
 wb = load_workbook("announced_authors.xlsx")
 ws = wb.active
 
@@ -81,7 +81,7 @@ else:
 
 # Save updated data
 full_data.to_xlsx("author_backlists_scraped.xlsx", index=False)
-print("Scraping complete. Data saved to author_backlists_scraped.csv\n")
+print("Scraping complete. Data saved to author_backlists_scraped.xlsx\n")
 
 # ----------------------- EXCEL BUILD PHASE -----------------------
 print("[2/2] Building Excel dashboard...")

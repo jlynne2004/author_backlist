@@ -6,8 +6,8 @@ import pandas as pd
 import time
 import pandas as pd
 
-# Load author names from your CSV
-author_df = pd.read_csv("announced_authors.csv")
+# Load author names from your xlsx
+author_df = pd.read_xlsx("announced_authors.xlsx")
 authors = author_df["Author Name"].dropna().tolist()
 
 # Headers to mimic a real browser visit
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     # Create DataFrame
     df = pd.DataFrame(all_books)
 
-    # Save to CSV
-    df.to_csv("author_backlists_scraped.csv", index=False)
+    # Save to xlsx
+    df.to_xlsx("author_backlists_scraped.xlsx", index=False)
 
-    print("Scraping completed! Data saved to author_backlists_scraped.csv")
+    print("Scraping completed! Data saved to author_backlists_scraped.xlsx")

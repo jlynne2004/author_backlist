@@ -7,7 +7,7 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 import re
 
 # Load scraped data
-scraped_data = pd.read_csv("author_backlists_scraped.csv")
+scraped_data = pd.read_xlsx("author_backlists_scraped.xlsx")
 
 # Initialize workbook
 wb = Workbook()
