@@ -101,7 +101,13 @@ headers = [
 
 def clean_url(value):
     value = str(value).strip()
-    return "" if value.lower() == "nan" else value
+    if value.lower() == "nan":
+        return ""
+    elif value.startswith("https://") or value.startswith("http://"):
+        return value
+    else:
+        return "https://" + value
+    #return "" if value.lower() == "nan" else value
 
 for person in full_data["Author"].dropna().unique():
     person_data = full_data[full_data["Author"].str.lower() == person.lower()]
