@@ -30,7 +30,7 @@ author_df = pd.DataFrame(data)
 
 # Load existing scraped data if it exists
 if os.path.exists("author_backlists_scraped.xlsx"):
-    existing_data = pd.read_xlsx("author_backlists_scraped.xlsx")
+    existing_data = pd.read_excel("author_backlists_scraped.xlsx")
     scraped_authors = existing_data["Author"].dropna().unique().tolist()
     print(f"Found existing scraped data. {len(scraped_authors)} authors already scraped.")
 else:

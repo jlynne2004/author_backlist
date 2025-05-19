@@ -7,7 +7,7 @@ import time
 import pandas as pd
 
 # Load author names from your xlsx
-author_df = pd.read_xlsx("announced_authors.xlsx")
+author_df = pd.read_excel("announced_authors.xlsx")
 authors = author_df["Author Name"].dropna().tolist()
 
 # Headers to mimic a real browser visit
