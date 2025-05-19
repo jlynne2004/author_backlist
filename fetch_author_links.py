@@ -1,4 +1,4 @@
-# fetch_author_links.py (reverted to DuckDuckGo and improved for type safety + author filtering + stricter website logic)
+# fetch_author_links.py (reverted to Google search and improved for type safety + author filtering + stricter website logic)
 
 import pandas as pd
 import requests
@@ -28,18 +28,18 @@ def save_cache():
     with open(CACHE_FILE, "w", encoding="utf-8") as f:
         json.dump(link_cache, f, indent=2)
 
-def search_duckduckgo(query, retries=3):
-    url = f"https://html.duckduckgo.com/html/?q={query.replace(' ', '+')}"
-    for attempt in range(retries):
-        try:
-            resp = requests.get(url, headers=HEADERS, timeout=10)
-            soup = BeautifulSoup(resp.text, 'html.parser')
-            results = soup.find_all("a", attrs={"class": "result__a"})
-            return [link.get("href") for link in results if link.get("href")]
-        except requests.exceptions.RequestException as e:
-            print(f"Retry {attempt + 1} failed for query: {query} — {e}")
-            time.sleep(5)
-    return []
+api_key = "AIzaSyBlSmRgCS6h46q5nhHj6RjrZ1DQ5WB695E"
+cse_id = "a630b28b577ad4870"
+
+def search_google(query, api_key, cse_id):
+    url = f"https://www.googleapis.com/customsearch/v1?key={api_key}&cx={cse_id}&q={query}"
+    try:
+        resp = requests.get(url)
+        data = resp.json()
+        return [item["link"] for item in data["items"]]
+    except requests.exceptions.RequestException as e:
+        print(f"Error searching for query: {query} - {e}")
+        return []
 
 def find_best_match(links, domain):
     for link in links:
@@ -69,6 +69,10 @@ def name_in_domain(link, name):
 # Load the CSV
 df = pd.read_csv("announced_authors.csv")
 
+# Get the number of authors
+num_authors = len(df)
+print(f"Found {num_authors} authors/narrators in announced_authors.csv")
+
 # Ensure link columns exist and cast to string
 for col in ["Website", "Amazon Page", "Goodreads Page", "Verified"]:
     if col not in df.columns:
@@ -78,7 +82,8 @@ for col in ["Website", "Amazon Page", "Goodreads Page", "Verified"]:
 
 df["Verified"] = df["Verified"].fillna("No")
 
-for idx, row in df.iterrows():
+# Process the first half of the authors
+for idx, row in df.head(num_authors // 2).iterrows():
     name = row["Author Name"]
     if not isinstance(name, str) or not name.strip():
         continue
@@ -94,19 +99,19 @@ for idx, row in df.iterrows():
         print(f"✅ Loaded from cache: {name}")
         continue
 
-    print(f"🔍 Searching links for {name} using DuckDuckGo...")
+    print(f"🔍 Searching links for {name} using Google search...")
 
     queries = {
-        "Website": f"{name} official site",
-        "Amazon Page": f"{name} Amazon author page",
-        "Goodreads Page": f"{name} Goodreads profile"
+        "Website": lambda: search_google(f"{name} official site", api_key, cse_id),
+        "Amazon Page": lambda: search_google(f"{name} Amazon {'author' if row['Role'] == 'Author' else 'narrator'} page", api_key, cse_id),
+        "Goodreads Page": lambda: search_google(f"{name} Goodreads profile", api_key, cse_id)
     }
 
     links_found = {}
     with cf.ThreadPoolExecutor() as executor:
         futures = []
         for key, query in queries.items():
-            futures.append(executor.submit(search_duckduckgo, query))
+            futures.append(executor.submit(search_google, query))
         for key, future in zip(queries.keys(), futures):
             try:
                 results = future.result()
