@@ -7,6 +7,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 import time
+import re
 
 # ----------------------- SCRAPE PHASE -----------------------
 print("[1/2] Scraping Goodreads backlists...")
@@ -122,6 +123,23 @@ def clean_url(value: str) -> str:
     else:
         return "https://" + value  # Add HTTPS protocol if it's not already there
 
+#Sanitize sheet name
+def sanitize_sheet_name(name):
+    """
+    Sanitize a sheet name by removing invalid characters and truncating to 31 characters.
+
+    Args:
+        name (str): The name to sanitize.
+
+    Returns:
+        str: The sanitized name.
+    """
+    # Remove invalid characters
+    clean_name = re.sub(r'[\\/*?:"<>|]', '', name)
+    # Truncate to 31 characters
+    return clean_name[:31]
+
+# Create a dashboard with author names and links to their tabs
 for person in full_data["Author"].dropna().unique():
     person_data = full_data[full_data["Author"].str.lower() == person.lower()]
     role =  person_data["Role"].iloc[0] if "Role" in person_data else "Author"
@@ -130,7 +148,7 @@ for person in full_data["Author"].dropna().unique():
     goodreads_url = clean_url(author_row.get("Goodreads Page", ""))
     amazon_url = clean_url(author_row.get("Amazon Page", ""))
     audible_url = clean_url(author_row.get("Audible Page", ""))
-    tab_name = person if len(person) <= 31 else person[:28] + "..."
+    tab_name = sanitize_sheet_name(person)
     row_num = dashboard.max_row + 1
     dashboard.cell(row=row_num, column=1).value = person
     dashboard.cell(row=row_num, column=2).value = role
