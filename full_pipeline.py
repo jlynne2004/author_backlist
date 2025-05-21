@@ -163,7 +163,7 @@ for person in full_data["Author"].dropna().unique():
     ws["B5"].hyperlink = audible_url
     ws["B5"].style = "Hyperlink"
 
-    if role == "Narrator":
+    if role != "Author":
         headers = [
             "Narrator","Book Title", "Series Title", "Author","Series Order", "Published Date",
             "Genre", "Standalone/Series", "Other Notes", "Audiobook (Y/N)", 
