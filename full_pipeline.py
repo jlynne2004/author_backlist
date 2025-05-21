@@ -169,7 +169,7 @@ for person in full_data["Author"].dropna().unique():
             "Genre", "Standalone/Series", "Other Notes", "Audiobook (Y/N)", 
             "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)", 
         ]
-        if person_data["Narrator"].iloc[0] == person_data["Pen Name"].iloc[0]:
+        if person_data["Author"].iloc[0] == person_data["Pen Name"].iloc[0]:
             headers.append("Pen Name")
     else:
         headers = [
