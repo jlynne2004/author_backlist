@@ -131,7 +131,10 @@ for person in full_data["Author"].dropna().unique():
     amazon_url = clean_url(author_row.get("Amazon Page", ""))
     audible_url = clean_url(author_row.get("Audible Page", ""))
     tab_name = person if len(person) <= 31 else person[:28] + "..."
-    dashboard.append([person, role, f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
+    row_num = dashboard.max_row + 1
+    dashboard.cell(row=row_num, column=1).value = person
+    dashboard.cell(row=row_num, column=2).value = role
+    dashboard.cell(row=row_num, column=3).value = f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'
     ws = wb.create_sheet(tab_name)
 
     ws.merge_cells('A1:B1')
@@ -144,24 +147,40 @@ for person in full_data["Author"].dropna().unique():
         ws[f'A{row}'].border = thin_border
         ws[f'B{row}'].border = thin_border
     ws["A2"] = "🌐 Website"
-    ws["B2"].value = "Author Website"
-    ws["B2"].hyperlink = website_url
-    ws["B2"].style = "Hyperlink"
+    if website_url:
+        ws["B2"].value = "Author Website"
+        ws["B2"].hyperlink = website_url
+        ws["B2"].style = "Hyperlink"
+    else:
+        ws["B2"].value = ""
+        print(f"⚠️  No website found for {person}")
 
     ws["A3"] = "📚 Goodreads"
-    ws["B3"].value = "Goodreads Page"
-    ws["B3"].hyperlink = goodreads_url
-    ws["B3"].style = "Hyperlink"
+    if goodreads_url:
+        ws["B3"].value = "Goodreads Page"
+        ws["B3"].hyperlink = goodreads_url
+        ws["B3"].style = "Hyperlink"
+    else:
+        ws["B3"].value = ""
+        print(f"⚠️  No Goodreads page found for {person}")
 
     ws["A4"] = "🛒 Amazon"
-    ws["B4"].value = "Amazon Page"
-    ws["B4"].hyperlink = amazon_url
-    ws["B4"].style = "Hyperlink"
-
+    if amazon_url:
+        ws["B4"].value = "Amazon Page"
+        ws["B4"].hyperlink = amazon_url
+        ws["B4"].style = "Hyperlink"
+    else:
+        ws["B4"].value = ""
+        print(f"⚠️  No Amazon page found for {person}")
+ 
     ws["A5"] = "🎧 Audible"
-    ws["B5"].value = "Audible Page"
-    ws["B5"].hyperlink = audible_url
-    ws["B5"].style = "Hyperlink"
+    if audible_url:
+        ws["B5"].value = "Audible Page"
+        ws["B5"].hyperlink = audible_url
+        ws["B5"].style = "Hyperlink"
+    else:
+        ws["B5"].value = ""
+        print(f"⚠️  No Audible page found for {person}")
 
     if role != "Author":
         headers = [
@@ -206,34 +225,34 @@ for person in full_data["Author"].dropna().unique():
         else:
             book_role = "Author"
 
-    row_list = [
-        row_data.get("Author", "") if role != "Narrator" else row_data.get("Narrator", ""),
-        row_data.get("Book Title", ""),
-        row_data.get("Series Title", ""),
-        row_data.get("Series Order", ""),
-        row_data.get("Published Date", ""),
-        row_data.get("Formats Available", ""),
-        row_data.get("Buy Links", ""),
-        row_data.get("Rent Links", ""),
-        row_data.get("Audiobook (Y/N)", ""),
-        row_data.get("Narrators", ""),
-        row_data.get("Kindle Unlimited (Y/N)", ""),
-        row_data.get("Kobo+ (Y/N)", ""),
-        row_data.get("Genre", ""),
-        row_data.get("Standalone/Series", ""),
-        row_data.get("Other Notes", ""),
-        row_data.get("Pen Name", "") if row_data.get("Pen Name","") != row_data.get("Author", "") else ""
-    ]
+        row_list = [
+            row_data.get("Author", "") if role != "Narrator" else row_data.get("Narrator", ""),
+            row_data.get("Book Title", ""),
+            row_data.get("Series Title", ""),
+            row_data.get("Series Order", ""),
+            row_data.get("Published Date", ""),
+            row_data.get("Formats Available", ""),
+            row_data.get("Buy Links", ""),
+            row_data.get("Rent Links", ""),
+            row_data.get("Audiobook (Y/N)", ""),
+            row_data.get("Narrators", ""),
+            row_data.get("Kindle Unlimited (Y/N)", ""),
+            row_data.get("Kobo+ (Y/N)", ""),
+            row_data.get("Genre", ""),
+            row_data.get("Standalone/Series", ""),
+            row_data.get("Other Notes", ""),
+            row_data.get("Pen Name", "") if row_data.get("Pen Name","") != row_data.get("Author", "") else ""
+        ]
 
-    ws.append(row_list)
+        ws.append(row_list)
 
-    for col_num in range(1, len(headers) + 1):
-        cell = ws[f"{get_column_letter(col_num)}{idx + 1}"]
-        if idx % 2 == 1:
-            cell.fill = gray_fill
-        cell.border = thin_border
-        if col_num == 5:  # Published Date column
-            cell.number_format = "MM/DD/YYYY"
+        for col_num in range(1, len(headers) + 1):
+            cell = ws[f"{get_column_letter(col_num)}{idx + 1}"]
+            if idx % 2 == 1:
+                cell.fill = gray_fill
+            cell.border = thin_border
+            if col_num == 5:  # Published Date column
+                cell.number_format = "MM/DD/YYYY"
 
 
     #dashboard.append([person, role, f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
