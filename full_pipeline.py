@@ -21,11 +21,27 @@ for row in ws.iter_rows(min_row=2, values_only=False):
     author = row[0].value
     role = row[1].value
     other_names = row[2].value
-    website = row[3].hyperlink.target if row[3].hyperlink else ""
-    goodreads = row[4].hyperlink.target if row[4].hyperlink else ""
-    amazon = row[5].hyperlink.target if row[5].hyperlink else ""
-    audible = row[6].hyperlink.target if row[6].hyperlink else ""
-    data.append({"Author Name": author, "Role": role, "Other Names": other_names, "Website": website, "Goodreads Page": goodreads, "Amazon Page": amazon, "Audible Page": audible})
+    website_display = row[3].value
+    website_link = row[3].hyperlink.target if row[3].hyperlink else ""
+    goodreads_display = row[4].value
+    goodreads_link = row[4].hyperlink.target if row[4].hyperlink else ""
+    amazon_display = row[5].value
+    amazon_link = row[5].hyperlink.target if row[5].hyperlink else ""
+    audible_display = row[6].value
+    audible_link = row[6].hyperlink.target if row[6].hyperlink else ""
+    data.append({
+        "Author Name": author,
+        "Role": role,
+        "Other Names": other_names,
+        "Website Display": website_display,
+        "Website": website_link,
+        "Goodreads Display": goodreads_display,
+        "Goodreads Page": goodreads_link,
+        "Amazon Display": amazon_display,
+        "Amazon Page": amazon_link,
+        "Audible Display": audible_display,
+        "Audible Page": audible_link
+    })
 
 author_df = pd.DataFrame(data)
 
@@ -144,10 +160,30 @@ for person in full_data["Author"].dropna().unique():
     person_data = full_data[full_data["Author"].str.lower() == person.lower()]
     role =  person_data["Role"].iloc[0] if "Role" in person_data else "Author"
     author_row = author_df[author_df["Author Name"] == person].iloc[0]
-    website_url = clean_url(author_row.get("Website", ""))
-    goodreads_url = clean_url(author_row.get("Goodreads Page", ""))
-    amazon_url = clean_url(author_row.get("Amazon Page", ""))
-    audible_url = clean_url(author_row.get("Audible Page", ""))
+    if website_url:
+        ws["B2"].value = author_row.get("Website Display", "Author Website")
+        ws["B2"].hyperlink = website_url
+        ws["B2"].style = "Hyperlink"
+    else:
+        print(f"⚠️  No website found for {person}")
+    if goodreads_url:
+        ws["B3"].value = author_row.get("Goodreads Display", "Goodreads Page")
+        ws["B3"].hyperlink = goodreads_url
+        ws["B3"].style = "Hyperlink"
+    else:
+        print(f"⚠️  No Goodreads page found for {person}")
+    if amazon_url:
+        ws["B4"].value = author_row.get("Amazon Display", "Amazon Page")
+        ws["B4"].hyperlink = amazon_url
+        ws["B4"].style = "Hyperlink"
+    else:
+        print(f"⚠️  No Amazon page found for {person}")    
+    if audible_url:
+        ws["B5"].value = author_row.get("Audible Display", "Audible Page")
+        ws["B5"].hyperlink = audible_url
+        ws["B5"].style = "Hyperlink"
+    else:
+        print(f"⚠️  No Audible page found for {person}")
     tab_name = sanitize_sheet_name(person)
     row_num = dashboard.max_row + 1
     dashboard.cell(row=row_num, column=1).value = person
@@ -290,7 +326,7 @@ for row_idx in range(1, dashboard.max_row + 1):
 support_col_start = 5 # Column E
 support_col_end = 8 # Column H
 support_row_start = 2 
-support_row_end = support_row_start + 10 # Spread over 9 rows
+support_row_end = support_row_start + 14 # Spread over 13 rows
 
 dashboard.merge_cells(start_row=support_row_start, start_column=support_col_start, end_row=support_row_end, end_column=support_col_end)
 cell = dashboard.cell(row=support_row_start, column=support_col_start)
