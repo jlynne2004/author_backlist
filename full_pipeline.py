@@ -165,30 +165,6 @@ for person in full_data["Author"].dropna().unique():
     amazon_url = clean_url(amazon_link)
     audible_url = clean_url(audible_link)
     # Create a new sheet for each author
-    if website_url:
-        ws["B2"].value = author_row.get("Website Display", "Author Website")
-        ws["B2"].hyperlink = website_url
-        ws["B2"].style = "Hyperlink"
-    else:
-        print(f"⚠️  No website found for {person}")
-    if goodreads_url:
-        ws["B3"].value = author_row.get("Goodreads Display", "Goodreads Page")
-        ws["B3"].hyperlink = goodreads_url
-        ws["B3"].style = "Hyperlink"
-    else:
-        print(f"⚠️  No Goodreads page found for {person}")
-    if amazon_url:
-        ws["B4"].value = author_row.get("Amazon Display", "Amazon Page")
-        ws["B4"].hyperlink = amazon_url
-        ws["B4"].style = "Hyperlink"
-    else:
-        print(f"⚠️  No Amazon page found for {person}")    
-    if audible_url:
-        ws["B5"].value = author_row.get("Audible Display", "Audible Page")
-        ws["B5"].hyperlink = audible_url
-        ws["B5"].style = "Hyperlink"
-    else:
-        print(f"⚠️  No Audible page found for {person}")
     tab_name = sanitize_sheet_name(person)
     row_num = dashboard.max_row + 1
     dashboard.cell(row=row_num, column=1).value = person
@@ -207,7 +183,7 @@ for person in full_data["Author"].dropna().unique():
         ws[f'B{row}'].border = thin_border
     ws["A2"] = "🌐 Website"
     if website_url:
-        ws["B2"].value = "Author Website"
+        ws["B2"].value = author_row.get("Website Display", "Author Website")
         ws["B2"].hyperlink = website_url
         ws["B2"].style = "Hyperlink"
     else:
@@ -216,7 +192,7 @@ for person in full_data["Author"].dropna().unique():
 
     ws["A3"] = "📚 Goodreads"
     if goodreads_url:
-        ws["B3"].value = "Goodreads Page"
+        ws["B3"].value = author_row.get("Goodreads Display", "Goodreads Page")
         ws["B3"].hyperlink = goodreads_url
         ws["B3"].style = "Hyperlink"
     else:
@@ -225,7 +201,7 @@ for person in full_data["Author"].dropna().unique():
 
     ws["A4"] = "🛒 Amazon"
     if amazon_url:
-        ws["B4"].value = "Amazon Page"
+        ws["B4"].value = author_row.get("Amazon Display", "Amazon Page")
         ws["B4"].hyperlink = amazon_url
         ws["B4"].style = "Hyperlink"
     else:
@@ -234,7 +210,7 @@ for person in full_data["Author"].dropna().unique():
  
     ws["A5"] = "🎧 Audible"
     if audible_url:
-        ws["B5"].value = "Audible Page"
+        ws["B5"].value = author_row.get("Audible Display", "Audible Page")
         ws["B5"].hyperlink = audible_url
         ws["B5"].style = "Hyperlink"
     else:
