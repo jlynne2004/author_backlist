@@ -3,8 +3,8 @@
 import os
 from scrape_goodreads_backlist import search_goodreads_author, scrape_goodreads_books
 import pandas as pd
-from openpyxl import Workbook, load_workbook
-from openpyxl.utils import get_column_letter
+from openpyxl import Workbook, load_workbook, utils
+from openpyxl.utils import get_column_letter, quote_sheetname
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 import time
 import re
@@ -152,7 +152,7 @@ for person in full_data["Author"].dropna().unique():
     row_num = dashboard.max_row + 1
     dashboard.cell(row=row_num, column=1).value = person
     dashboard.cell(row=row_num, column=2).value = role
-    dashboard.cell(row=row_num, column=3).value = f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'
+    dashboard.cell(row=row_num, column=3).value = f'=HYPERLINK("#{quote_sheetname(tab_name)}!A1", "Go To Tab")'
     ws = wb.create_sheet(tab_name)
 
     ws.merge_cells('A1:B1')
