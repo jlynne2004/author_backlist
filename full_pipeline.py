@@ -103,24 +103,6 @@ thin_border = Border(
     bottom=Side(style='thin', color='000000')
 )
 
-if role == "Narrator":
-    headers = [
-        "Narrator","Book Title", "Series Title", "Author","Series Order", "Published Date",
-        "Genre", "Standalone/Series", "Other Notes", "Audiobook (Y/N)", 
-        "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)", 
-    ]
-    if books.get("Narrator","") == books.get("Pen Name",""):
-        headers.append("Pen Name")
-else:
-    headers = [
-        "Author", "Book Title", "Series Title", "Series Order", "Published Date",
-        "Formats Available", "Buy Links", "Rent Links", "Audiobook (Y/N)",
-        "Narrators", "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)",
-        "Genre", "Standalone/Series", "Other Notes", "Pen Name"
-    ]
-    if books.get("Author","") == books.get("Pen Name",""):
-        headers.append("Pen Name")
-
 
 def clean_url(value: str) -> str:
     """
@@ -181,6 +163,23 @@ for person in full_data["Author"].dropna().unique():
     ws["B5"].hyperlink = audible_url
     ws["B5"].style = "Hyperlink"
 
+    if role == "Narrator":
+        headers = [
+            "Narrator","Book Title", "Series Title", "Author","Series Order", "Published Date",
+            "Genre", "Standalone/Series", "Other Notes", "Audiobook (Y/N)", 
+            "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)", 
+        ]
+        if person_data["Narrator"].iloc[0] == person_data["Pen Name"].iloc[0]:
+            headers.append("Pen Name")
+    else:
+        headers = [
+            "Author", "Book Title", "Series Title", "Series Order", "Published Date",
+            "Formats Available", "Buy Links", "Rent Links", "Audiobook (Y/N)",
+            "Narrators", "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)",
+            "Genre", "Standalone/Series", "Other Notes", "Pen Name"
+        ]
+        if person_data["Author"].iloc[0] == person_data["Pen Name"].iloc[0]:
+            headers.append("Pen Name")
 
     ws.append([])
     ws.append([])
