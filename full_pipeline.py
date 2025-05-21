@@ -30,7 +30,7 @@ author_df = pd.DataFrame(data)
 
 # Load existing scraped data if it exists
 if os.path.exists("author_backlists_scraped.xlsx"):
-    existing_data = pd.read_excel("author_backlists_scraped.xlsx", egnine="openpyxl")
+    existing_data = pd.read_excel("author_backlists_scraped.xlsx", engine="openpyxl")
     scraped_authors = existing_data["Author"].dropna().unique().tolist()
     print(f"Found existing scraped data. {len(scraped_authors)} authors already scraped.")
 else:
@@ -237,7 +237,7 @@ for person in full_data["Author"].dropna().unique():
             cell.number_format = "MM/DD/YYYY"
 
 
-    dashboard.append([person, role, f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
+    #dashboard.append([person, role, f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
 
 for col in range(1, 4):
     cell = dashboard.cell(row=1, column=col)
