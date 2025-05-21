@@ -109,7 +109,7 @@ if role == "Narrator":
         "Genre", "Standalone/Series", "Other Notes", "Audiobook (Y/N)", 
         "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)", 
     ]
-    if pen_name:
+    if books.get("Narrator","") == books.get("Pen Name",""):
         headers.append("Pen Name")
 else:
     headers = [
@@ -118,7 +118,7 @@ else:
         "Narrators", "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)",
         "Genre", "Standalone/Series", "Other Notes", "Pen Name"
     ]
-    if pen_name:
+    if books.get("Author","") == books.get("Pen Name",""):
         headers.append("Pen Name")
 
 
