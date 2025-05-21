@@ -290,7 +290,7 @@ for row_idx in range(1, dashboard.max_row + 1):
 support_col_start = 5 # Column E
 support_col_end = 8 # Column H
 support_row_start = 2 
-support_row_end = support_row_start + 5 # Spread over 6 rows
+support_row_end = support_row_start + 10 # Spread over 9 rows
 
 dashboard.merge_cells(start_row=support_row_start, start_column=support_col_start, end_row=support_row_end, end_column=support_col_end)
 cell = dashboard.cell(row=support_row_start, column=support_col_start)
