@@ -6,6 +6,7 @@ import pandas as pd
 from openpyxl import Workbook, load_workbook, utils
 from openpyxl.utils import get_column_letter, quote_sheetname
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
+from unidecode import unidecode
 import time
 import re
 
@@ -135,8 +136,8 @@ def clean_url(value: str) -> str:
         str: The cleaned up URL.
     """
     value = str(value).strip()
-    if value.lower() == "nan":
-        return ""  # Return empty string if value is NaN
+    if pd.isna(value):
+        return ""  # Return empty string if value is missing or NULL
     elif value.startswith("https://") or value.startswith("http://"):
         return value  # Return the value as is if it already has a protocol
     else:
@@ -154,6 +155,7 @@ def sanitize_sheet_name(name):
         str: The sanitized name.
     """
     # Remove invalid characters
+    clean_name = unidecode(name)
     clean_name = re.sub(r'[\\/*?:"<>|]', '', name)
     # Truncate to 31 characters
     return clean_name[:31]
