@@ -156,6 +156,29 @@ def sanitize_sheet_name(name):
     # Truncate to 31 characters
     return clean_name[:31]
 
+def create_short_tab_name(full_name):
+    """
+    Create a short tab name using first name + last initial
+    Example: "John Smith" -> "John S"
+    """
+    # Clean the name first
+    clean_name = str(full_name).strip()
+    
+    # Split into parts
+    name_parts = clean_name.split()
+    
+    if len(name_parts) == 1:
+        # Just one name, use it as is (up to 15 chars to be safe)
+        return name_parts[0][:15]
+    elif len(name_parts) >= 2:
+        # First name + last initial
+        first_name = name_parts[0]
+        last_initial = name_parts[-1][0].upper()  # Use last part's first letter
+        short_name = f"{first_name} {last_initial}"
+        return short_name[:15]  # Keep it short to avoid issues
+    else:
+        return "Author"
+
 dashboard_data = []
 
 # Create a dashboard with author names and links to their tabs
@@ -175,8 +198,18 @@ for person in full_data["Author"].dropna().unique():
     goodreads_url = clean_url(author_row.get("Goodreads Page",""))
     amazon_url = clean_url(author_row.get("Amazon Page",""))
     audible_url = clean_url(author_row.get("Audible Page",""))
-    # Create a new sheet for each author
-    tab_name = sanitize_sheet_name(person)
+    # Create a new short tab name sheet for each author
+    tab_name = create_short_tab_name(person)
+
+    # Handle potential duplicate tab names by appending a number if needed
+    original_tab_name = tab_name
+    counter = 1
+    existing_tabs = [sheet.title for sheet in wb.worksheets]
+    while tab_name in existing_tabs:
+        tab_name = f"{original_tab_name} {counter}"
+        counter += 1
+    print(f"Creating tab for {person} with name: {tab_name}")
+
     # Store dashboard data for later
     dashboard_data.append({
         'name': person, 
@@ -308,7 +341,7 @@ for person in full_data["Author"].dropna().unique():
             if col_num == 5:  # Published Date column
                 cell.number_format = "MM/DD/YYYY"
 
-# Now populate the dashboard with proper hyperlinks
+# Now populate the dashboard with the simplified tab name
 for entry in dashboard_data:
     row_num = dashboard.max_row + 1
     dashboard.cell(row=row_num, column=1).value = entry['name']
@@ -320,6 +353,7 @@ for entry in dashboard_data:
     # Use a simpler internal hyperlink format that Excel accepts better
     link_cell.hyperlink = f"#{entry['tab_name']}!A1"
     link_cell.style = "Hyperlink"
+    print(f"Added {entry['name']} to dashboard with link to {entry['tab_name']}")
 
 # Style the dashboard header and borders
 for col in range(1, 4):
@@ -362,4 +396,4 @@ dashboard.cell(row=footer_row, column=1).alignment = Alignment(horizontal='cente
 dashboard.cell(row=footer_row, column=1).font = Font(italic=True)
 
 wb.save("author_backlist_final.xlsx")
-print("Done! Your full event-ready Excel dashboard is ready: author_backlist_final.xlsx")
+print("Done! Your full event-ready Excel dashboard with simplified tab names is ready: author_backlist_final.xlsx")
