@@ -18,33 +18,29 @@ wb = load_workbook("announced_authors.xlsx")
 ws = wb.active
 
 data = []
-for row in ws.iter_rows(min_row=2, values_only=False):
-    author = row[0].value
-    role = row[1].value
-    other_names = row[2].value
-    website_display = row[3].value
-    website_link = row[3].hyperlink.target if row[3].hyperlink else row[3].value
-    print(f"Author Website: {row[3].hyperlink}")
-    goodreads_display = row[4].value
-    goodreads_link = row[4].hyperlink.target if row[4].hyperlink else row[4].value
-    print(f"Goodreads Page: {row[4].hyperlink}")
-    amazon_display = row[5].value
-    amazon_link = row[5].hyperlink.target if row[5].hyperlink else row[5].value
-    print(f"Amazon Page: {row[5].hyperlink}")
-    audible_display = row[6].value
-    audible_link = row[6].hyperlink.target if row[6].hyperlink else row[6].value
-    print(f"Audible Page: {row[6].hyperlink}")
+for row in ws.iter_rows(min_row=2, values_only=True):
+    author = row[0]
+    role = row[1]
+    other_names = row[2]
+    website_link = row[3]
+    print(f"Author Website: {row[3]}")
+    goodreads_link = row[4]
+    print(f"Goodreads Page: {row[4]}")
+    amazon_link = row[5]
+    print(f"Amazon Page: {row[5]}")
+    audible_link = row[6]
+    print(f"Audible Page: {row[6]}")
     data.append({
         "Author Name": author,
         "Role": role,
         "Other Names": other_names,
-        "Website Display": website_display,
+        "Website Display": "Author Website",
         "Website": website_link,
-        "Goodreads Display": goodreads_display,
+        "Goodreads Display": "Goodreads Page",
         "Goodreads Page": goodreads_link,
-        "Amazon Display": amazon_display,
+        "Amazon Display": "Amazon Page",
         "Amazon Page": amazon_link,
-        "Audible Display": audible_display,
+        "Audible Display": "Audible Page",
         "Audible Page": audible_link
     })
 
@@ -164,7 +160,15 @@ def sanitize_sheet_name(name):
 for person in full_data["Author"].dropna().unique():
     person_data = full_data[full_data["Author"].str.lower() == person.lower()]
     role =  person_data["Role"].iloc[0] if "Role" in person_data else "Author"
-    author_row = author_df[author_df["Author Name"] == person].iloc[0]
+    # Find the author row in the original dataframe
+    author_row = None
+    for entry in data:
+        if entry["Author Name"] == person:
+            author_row = entry
+            break
+        if not author_row:
+            print(f"⚠️  No author row found for {person}. Skipping...")
+            continue
     website_url = clean_url(author_row.get("Website"))
     goodreads_url = clean_url(author_row.get("Goodreads Page"))
     amazon_url = clean_url(author_row.get("Amazon Page"))
@@ -174,7 +178,7 @@ for person in full_data["Author"].dropna().unique():
     row_num = dashboard.max_row + 1
     dashboard.cell(row=row_num, column=1).value = person
     dashboard.cell(row=row_num, column=2).value = role
-    dashboard.cell(row=row_num, column=3).value = f'=HYPERLINK("#{quote_sheetname(tab_name)}!A1", "Go To Tab")'
+    dashboard.cell(row=row_num, column=3).value = f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'
     ws = wb.create_sheet(tab_name)
 
     ws.merge_cells('A1:B1')
@@ -183,11 +187,11 @@ for person in full_data["Author"].dropna().unique():
     ws['A1'].font = black_font_bold
     ws['A1'].fill = hot_pink_fill
 
-    for row in range(1, 5):
+    for row in range(1, 6):
         ws[f'A{row}'].border = thin_border
         ws[f'B{row}'].border = thin_border
     ws["A2"] = "🌐 Website"
-    if website_url:
+    if website_url and  website_url != "https://":
         ws["B2"].value = author_row.get("Website Display", "Author Website")
         ws["B2"].hyperlink = website_url
         ws["B2"].style = "Hyperlink"
@@ -196,7 +200,7 @@ for person in full_data["Author"].dropna().unique():
         print(f"⚠️  No website found for {person}")
 
     ws["A3"] = "📚 Goodreads"
-    if goodreads_url:
+    if goodreads_url and goodreads_url != "https://":
         ws["B3"].value = author_row.get("Goodreads Display", "Goodreads Page")
         ws["B3"].hyperlink = goodreads_url
         ws["B3"].style = "Hyperlink"
@@ -205,7 +209,7 @@ for person in full_data["Author"].dropna().unique():
         print(f"⚠️  No Goodreads page found for {person}")
 
     ws["A4"] = "🛒 Amazon"
-    if amazon_url:
+    if amazon_url and amazon_url != "https://":
         ws["B4"].value = author_row.get("Amazon Display", "Amazon Page")
         ws["B4"].hyperlink = amazon_url
         ws["B4"].style = "Hyperlink"
@@ -214,7 +218,7 @@ for person in full_data["Author"].dropna().unique():
         print(f"⚠️  No Amazon page found for {person}")
  
     ws["A5"] = "🎧 Audible"
-    if audible_url:
+    if audible_url and audible_url != "https://":
         ws["B5"].value = author_row.get("Audible Display", "Audible Page")
         ws["B5"].hyperlink = audible_url
         ws["B5"].style = "Hyperlink"
