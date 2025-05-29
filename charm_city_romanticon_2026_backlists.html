@@ -1,0 +1,3531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charm City Romanticon 2026 - Author Backlists</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #EC008C;
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .support-message {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            margin: 25px;
+            border-radius: 12px;
+            border-left: 6px solid #EC008C;
+            font-style: italic;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .support-message strong {
+            color: #EC008C;
+            font-size: 1.1em;
+        }
+        
+        .search-bar {
+            padding: 20px;
+            text-align: center;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .search-input {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            width: 300px;
+            max-width: 90%;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-input:focus {
+            border-color: #EC008C;
+        }
+        
+        .authors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 25px;
+            padding: 30px;
+        }
+        
+        .author-card {
+            background: white;
+            border: 2px solid #EC008C;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .author-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #EC008C, #ff6b9d);
+        }
+        
+        .author-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border-color: #d1007a;
+        }
+        
+        .author-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #EC008C;
+            margin-bottom: 8px;
+        }
+        
+        .author-role {
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+            font-size: 1.05em;
+        }
+        
+        .links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 15px;
+            background: linear-gradient(45deg, #EC008C, #ff6b9d);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .link-btn:hover {
+            background: linear-gradient(45deg, #d1007a, #e55a87);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(236, 0, 140, 0.3);
+        }
+        
+        .link-btn span {
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
+        
+        .books-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        .books-toggle {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border: 2px solid #EC008C;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            color: #EC008C;
+            text-align: center;
+        }
+        
+        .books-toggle:hover {
+            background: #EC008C;
+            color: white;
+        }
+        
+        .books-list {
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 0.95em;
+        }
+        
+        .books-list.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .book-item {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s ease;
+        }
+        
+        .book-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .book-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .book-series {
+            color: #666;
+            font-size: 0.85em;
+        }
+        
+        .book-meta {
+            color: #888;
+            font-size: 0.8em;
+            margin-top: 4px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            font-style: italic;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+        
+        .stats {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        @media (max-width: 768px) {
+            .authors-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .support-message {
+                margin: 15px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Charm City Romanticon 2026</h1>
+            <p>Author & Narrator Backlists</p>
+        </div>
+        
+        <div class="support-message">
+            <strong>💡 Support Authors Directly</strong><br>
+            Whenever possible, consider purchasing books directly from the author's website if they have a store.
+            Amazon takes a significant portion of royalties and can penalize authors for piracy and other issues beyond their control — even removing their accounts.
+            We understand that Amazon is convenient and affordable, and authors still rely on it.
+            But every direct purchase makes a bigger impact. 💖
+        </div>
+        
+        <div class="search-bar">
+            <input type="text" class="search-input" placeholder="Search authors..." onkeyup="searchAuthors()">
+        </div>
+        
+        <div class="stats" id="stats">
+            Loading authors...
+        </div>
+        
+        <div class="authors-grid" id="authorsGrid">
+
+            <div class="author-card" data-name="am johnson" data-role="author">
+                <div class="author-name">AM Johnson</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.amjohnsonauthor.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/1013748.A_M_Johnson" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://A.M.'s Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://A.M.'s Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('AM Johnson')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-AM Johnson" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">The Glow Up (Franklin U, #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Love Always, Wild (For Him, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Let There Be Light (Twin Hearts, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Not So Sincerely, Yours (For Him, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Dear Mr. Brody (For Him, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Meet Me in the Blue (Hemlock Harbor, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Forever, Con Amor (For Him, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Seven Shades of You (Twin Hearts #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">To Whom It May Concern (For Him, #3.5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Possession (Avenues Ink, #1)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="alastair haynesbridge" data-role="narrator">
+                <div class="author-name">Alastair Haynesbridge</div>
+                <div class="author-role">Narrator</div>
+                <div class="links">
+        <a href="https://narrator.page/n/alastair_haynesbridge" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/13891684.Alastair_Haynesbridge" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Alastair's Audible List" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Alastair Haynesbridge')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Alastair Haynesbridge" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">The Worst Best Man</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Wedding Crasher</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Starter Ex</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Sun of a Beach</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Acting on Impulse (Love on Cue, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Pretending He&#x27;s Mine (Love on Cue, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Crashing into Her (Love on Cue, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Unbuttoning the CEO (The Suits Undone #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">One Night with the CEO (The Suits Undone, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Getting Dirty with the CEO (The Suits Undone #3)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="aly stiles" data-role="author">
+                <div class="author-name">Aly Stiles</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://alystiles.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/20866879.Aly_Stiles" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Aly's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Aly's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Aly Stiles')">
+                        📖 View Books (20)
+                    </div>
+                    <div id="books-Aly Stiles" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Street Smart (Work For It, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Ashton Morgan: Apartment 17B (Wreck Me, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Camden Walker: Apartment 8C (Wreck Me #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Play Smart (Work For It, #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Crashing East (Save Me #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Look Smart (Work for It #6)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Guarding Shadows (Save Me #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Traitor (Twisted Fate Book 1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Tristan &amp; Isabel: Apartment 11F (Wreck Me #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Stage Smart (Work For It #8)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Night Shifts Black (NSB #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Tracing Holland (NSB #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Rising West (Save Me #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Viper (NSB #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Limelight (NSB #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Falling North (Save Me #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Young Love</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Breaking South (Save Me #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">An NSB Wedding (NSB #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Haunted Melody: A Ghost Story</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="angi hunter" data-role="author">
+                <div class="author-name">Angi Hunter</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.worldofadhunter.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/8096370.A_D_Hunter" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://A.D.'s Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://A.D.'s Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Angi Hunter')">
+                        📖 View Books (20)
+                    </div>
+                    <div id="books-Angi Hunter" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Southern Spirits (Southern Ghost Hunter Mysteries, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Accidental Demon Slayer (Demon Slayer, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Skeleton in the Closet (Southern Ghost Hunter Mysteries, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Deader Homes and Gardens (Southern Ghost Hunter Mysteries, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Haunted Heist (Southern Ghost Hunter Mysteries, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Murder on the Sugarland Express (Southern Ghost Hunter Mysteries, #6)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Sweet Tea and Spirits (Southern Ghost Hunter, #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Dangerous Book for Demon Slayers (Demon Slayer, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A Ghostly Gift (Southern Ghost Hunter Mysteries, #1.5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Ghost of Christmas Past (Southern Ghost Hunter Mysteries, #8.5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Her Angel Lover (The Lochwillow Chronicles, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Her Only Vampire (The Lochwillow Chronicles #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Face of an Angel (The Last Daughters of Titus #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Her Claimed Alpha (The Lochwillow Chronicles #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Body of a Venus (The Last Daughters of Titus #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Fate of the Reaper (The Last Daughters of Titus #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Kindred of the Guardian (The Last Daughters of Titus #6)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Son of the Avenger (The Last Daughters of Titus, #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Heart of Stone (The Last Daughters of Titus #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Last Daughters of Titus Collection #1-3</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="anna blakely" data-role="author">
+                <div class="author-name">Anna Blakely</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.annablakely.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/18650841.Anna_Blakely" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Anna's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Anna's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Anna Blakely')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Anna Blakely" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Rescuing Gracelynn (Bravo RISC Team #1; Special Forces: Operation Alpha)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Beautiful Risk (R.I.S.C., #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Marked for Death (Marked, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Rescuing Katherine (Bravo RISC Team #2; Special Forces: Operation Alpha)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Taking a Risk: Part One (R.I.S.C., #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Kellan (R.I.S.C. Charlie Team #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Rescuing Jenna (Bravo RISC Team #5; Special Forces: Operation Alpha)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Taking a Risk: Part Two (R.I.S.C., #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Rescuing Gabriella (Bravo RISC Team #3; Special Forces: Operation Alpha)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Ultimate Risk (R.I.S.C., #6)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="avery maxwell" data-role="author">
+                <div class="author-name">Avery Maxwell</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.averymaxwellbooks.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/20347296.Avery_Maxwell" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Avery's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Avery's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Avery Maxwell')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Avery Maxwell" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Cross My Heart (The Westbrooks: Broken Hearts, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Your Last First Kiss</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Without a Hitch</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Beat of My Heart</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Saving His Heart</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Romancing His Heart (The Westbrooks: Broken Hearts, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">One Little Mistake</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">One Little Kiss</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">One Little Secret</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Love Notes &amp; Lifelines (Single Dad Hotline #1)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="carly robins" data-role="narrator">
+                <div class="author-name">Carly Robins</div>
+                <div class="author-role">Narrator</div>
+                <div class="links">
+        <a href="https://www.carlyrobins.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/7045831.Carly_Robins" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Carly's Audible List" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Carly Robins')">
+                        📖 View Books (20)
+                    </div>
+                    <div id="books-Carly Robins" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Emma in the Night</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Don&#x27;t Look for Me</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">All Is Not Forgotten</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Night Before</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Mad Love</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">American Girl</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">What Remains</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Hold Your Breath</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Four Wives</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Social Lives</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Sweetpea (Sweetpea, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">In Bloom (Sweetpea, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Dead Head (Sweetpea, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Thorn In My Side (Sweetpea, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Alibi Girl</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Bad Seeds (Sweetpea, #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Rockoholic</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Monster</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Pretty Bad Things</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Deviants</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="cathryn lyons" data-role="author &amp; narrator">
+                <div class="author-name">Cathryn Lyons</div>
+                <div class="author-role">Author &amp; Narrator</div>
+                <div class="links">
+        <a href="https://www.cathrynlyonsauthor.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/20264009.Cathryn_Lyons" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Cathryn's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Cathryn's Audible List" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Cathryn Lyons')">
+                        📖 View Books (3)
+                    </div>
+                    <div id="books-Cathryn Lyons" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Heartstrings</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Apple Pots and Funeral Plots (Liza Wilcox #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Arches</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="charissa gracyk" data-role="author">
+                <div class="author-name">Charissa Gracyk</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.charissagracyk.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/21612993.Charissa_Gracyk" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Charissa's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Charissa Gracyk')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Charissa Gracyk" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Ryland (Force Protection Delta #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Reactivated: Cassian (Project Phoenix #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Operation: Fire Bomb (Slater Security # 4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Gray (Force Protection Delta #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Reactivated: Aidan (Project Phoenix #7)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Reactivated: Deacon (Project Phoenix #6)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Reactivated: Oz (Project Phoenix #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Operation: Dead Drop (Slater Security #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Saint (Force Protection Delta #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Force Protection Delta: Books 1-4</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="dakota willink" data-role="author">
+                <div class="author-name">Dakota Willink</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://dakotawillink.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/14808492.Dakota_Willink" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Dakota's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Dakota's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Dakota Willink')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Dakota Willink" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Heart of Stone (The Stone Series#1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Stepping Stone (The Stone, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Set in Stone (The Stone, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Wishing Stone (The Stone, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Breaking Stone (The Stone Series #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Untouched (Fade Into You book 1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Defined (Fade Into You Book 2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Sound of Silence</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Endurance (Fade Into You Book 3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Seeds of Love: A Romance Charity Anthology to Benefit Ukraine</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="darren eliker" data-role="narrator">
+                <div class="author-name">Darren Eliker</div>
+                <div class="author-role">Narrator</div>
+                <div class="links">
+        <a href="https://darreneliker.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/29816630.Darren_Eliker" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Darren's Audible List" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Darren Eliker')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Darren Eliker" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">The Man I Love (The Fish Tales, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">An Exaltation of Larks (Venery, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Give Me Your Answer True (The Fish Tales, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Here to Stay (The Fish Tales, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A Charm of Finches (Venery, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A Scarcity of Condors (Venery, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A Small Hotel (Small Hotel, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Ones That Got Away (The Fish Tales, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Tales from Cushman Row (Venery, #2.5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Voyages of Trueblood Cay (Venery, #2.75)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="elizabella baker" data-role="author">
+                <div class="author-name">Elizabella Baker</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.authorelizabellabaker.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/21047921.Elizabella_Baker" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Elizabella's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Elizabella's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Elizabella Baker')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Elizabella Baker" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Reclaiming What’s Mine (Blackguard Security: Phantom #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Protecting Ember (Bravo Team, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Flirting with Temptation (Blackguard Security: Phantom #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Rugged Fox (Willow Creek Security #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Westley</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Resisting the Spark (Blackguard Security: Phantom #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Chasing Trista (Bravo Team, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Guarding Jewels (Bravo Team, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Charlie Team Series Box Set</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Securing Abigail (Bravo Team, #5)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="ember davis" data-role="author">
+                <div class="author-name">Ember Davis</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://emberdavis.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/20168930.Ember_Davis" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Ember's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Ember's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Ember Davis')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Ember Davis" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Room Six: Breathlessly Devoted to Them (Club Sin: Chicago Sessions 1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Knot Running From Fate</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Protecting His Home (Banks Ink. #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Room Three:  They Like to Bite (Club Sin #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Stalking From the Shadows (Monster Between the Sheets: Season 2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A Very Pierced Christmas</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Rough Riding</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Rock &amp; Crank</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Dad Bod Foreman</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Built Dad Bod Tough (Dad Bod: Men Built for Comfort #5)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="emily silver" data-role="author">
+                <div class="author-name">Emily Silver</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://authoremilysilver.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/20589003.Emily_Silver" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Emilys Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Emily's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Emily Silver')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Emily Silver" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Roughing the Kicker (Denver Mountain Lions, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Off the Deep End</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Yours to Hold (Dixon Creek Ranch, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Yours to Take (Dixon Creek Ranch, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Pass Interference (Denver Mountain Lions, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Royal Reckoning (Ainsworth Royals, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Game Misconduct (Nashville Knights Hockey #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Reckless Royal (Ainsworth Royals, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Sideline Infraction (Denver Mountain Lions, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Yours to Be (Dixon Creek Ranch #3)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="erin mallon" data-role="author &amp; narrator">
+                <div class="author-name">Erin Mallon</div>
+                <div class="author-role">Author &amp; Narrator</div>
+                <div class="links">
+        <a href="https://www.erinmallon.com/home" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/18581583.Erin_Mallon" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Erin's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Erin's Audible List" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Erin Mallon')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Erin Mallon" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Flirtasaurus (Natural History, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">These Walls Can Talk</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Lovebug (Natural History, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Narwhal Strikes Back! (These Walls Can Talk #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Rise of the Machine (These Walls Can Talk, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Sharkbait (Natural History, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Bromantic Comedies: Six Short Audio Plays for Fellas</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Pale Blue Dot</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Natural History Novellas: Where Are They Now? (Natural History #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Bringing Home the Bacon (Farm 2 Forking #4)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="fiona davenport" data-role="author">
+                <div class="author-name">Fiona Davenport</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="http://www.fionadavenport.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/14798264.Fiona_Davenport" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Fiona's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Fiona's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Fiona Davenport')">
+                        📖 View Books (30)
+                    </div>
+                    <div id="books-Fiona Davenport" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Baby, You&#x27;re Mine (Yeah, Baby,  #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">I&#x27;m Yours, Baby (Yeah, Baby, #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">His Love (Love #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Mac (Silver Saints MC, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Her Wolf (Shifted Love, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Baby Steps (Yeah, Baby #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Link (Silver Saints MC, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Her Alpha (Shifted Love, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Dom (Silver Saints MC #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Starlet</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Something Wicked This Way Comes</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Until Rayne</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Snowed Inn for Christmas Anthology (Snowed Inn, #1-9)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Protecting Shaylee (The Fae Guard, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Until the Lightning Strikes</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">An Unexpected Claim (Silver Lake Shifters, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">For Ranchers Only (Ranchers Only #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Hot as Sin: Monster Between the Sheets: Season 2</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Say Yes</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Ride a Rancher (Ranchers Only #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Push the Envelope (Blythe College, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Crying Wolf (Black River Pack, #1; Fated Mates, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Until Leo</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Shoot for the Moon (Black River Pack #2; Fated Mates, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Hit the Wall (Blythe College, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Black River Pack Box Set (Black River Pack, #1-3; Fated Mates, #1-3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Bare Your Soul  (Body and Soul, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Thrown to the Wolves (Black River Pack #3; Fated Mates, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Sucked Into Love (Bachelorette Party #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Outside the Box (Blythe College, #3)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="ginger scott" data-role="author">
+                <div class="author-name">Ginger Scott</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://gingerscottbooks.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/7055100.Ginger_Scott" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Ginger's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Ginger's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Ginger Scott')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Ginger Scott" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">This is Falling (Falling, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Wild Reckless (Harper Boys, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Waiting on the Sidelines (Waiting on the Sidelines, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Hard Count</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">You and Everything After (Falling, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Going Long (Waiting on the Sidelines, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A Boy Like You (Like Us, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Girl I Was Before (Falling, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Tomboy and The Captain (The Final Score #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">How We Deal with Gravity</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="golden angel" data-role="author">
+                <div class="author-name">Golden Angel</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.goldenangelromance.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/6440220.Golden_Angel" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Golden's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Golden's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Golden Angel')">
+                        📖 View Books (20)
+                    </div>
+                    <div id="books-Golden Angel" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">The Sassy Submissive (Stronghold Doms, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Philip&#x27;s Rules (Bridal Discipline, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A Season for Treason (Deception and Discipline, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Birching his Bride (Domestic Discipline Quartet, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Chasing His Bunny (Big Bad Bunnies #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Bondage Buddies (Masters of Marquis, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Venus School (Venus Rising, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Taming the Tease (Stronghold Doms, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Mastering Lexie (Stronghold Doms, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Dungeon Master (Dungeons and Doms, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">His Omega Babygirl</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">His Pretty Kitty (Planets Apart, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Alien Pleasures</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Calling Her Bluff (Dangerous Games Book 1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Dark Tales</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Taking the Reins (Planets Apart Book 4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Dark Vows</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Temptation (Black Light #33)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Serving Her Sentence</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Consequences Part 1</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="hannah mcbride" data-role="author">
+                <div class="author-name">Hannah McBride</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://hannahmcbrideauthor.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/20263760.Hannah_McBride" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Hannah's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Hannah's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Hannah McBride')">
+                        📖 View Books (16)
+                    </div>
+                    <div id="books-Hannah McBride" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Sanctum (Blackwater Pack, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Mad World (Mad World, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Prey (Blackwater Pack, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Mad as Hell (Mad World, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Legacy (Blackwater Pack, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Mad Love (Mad World, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Broken (Blackwater Pack, #1.5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Scars (Blackwater Pack, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Into the Woods: A Mad World Novel</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Reckless Love</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Pack Dutton: Part 1</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Pack Dutton: Part 2</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Smart Start Garden Plan</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Super Easy Food Preserving: Quick Techniques for Fresh, Fridge and Freezer Storage</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Pack Dutton: Part 2: A Dark Omegaverse Novel</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Pack Stone: A Dark Omegaverse Novel</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="janice whiteaker" data-role="author">
+                <div class="author-name">Janice Whiteaker</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.janicewhiteaker.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/21961161.Janice_Whiteaker" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Janice's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Janice's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Janice Whiteaker')">
+                        📖 View Books (27)
+                    </div>
+                    <div id="books-Janice Whiteaker" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Cowboy Seeking Nanny (Cowboy Classifieds, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Cowboy Seeking a Second Chance (Cowboy Classifieds, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Cowboy Seeking A Wedding Date (Cowboy Classifieds, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Cowboy Seeking Someone to Love (Cowboy Classifieds, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Crossing the Line (Cross Creek Ranch #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Mountain Calling (BIG-Secrets of Mountain Men #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Finding What&#x27;s Mine (Lost Boys, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Danny (Big Northwest #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Mountain Homecoming (BIG-Secrets of Mountain Men #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Mountain Claiming (BIG-Secrets of Mountain Men #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Loss Recovery (Alaskan Security-Team Rogue, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Counterfeit Relations (Alaskan Security-Team Rogue #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Enemy Territory (Alaskan Security-Team Rogue, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Guerrilla Tactics (Alaskan Security-Team Rogue, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Strategic Maneuvers (Alaskan Security-Team Rogue, #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Advance by Bounds (Alaskan Security-Team Rogue, #6)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Friendly Fire (Alaskan Security-Team Rogue, #7)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Dangerous Proximity (Alaskan Security-Team Rogue, #8)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Defensive Alliance (Alaskan Security-Team Rogue, #9)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Line of Resistance (Alaskan Security-Team Rogue, #10)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Fish out of Water (Scandal in Sweet Side #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Mistle-Ho (Cape Coral Swamp Cats, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Out on a Limb (Scandal in Sweet Side #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Hit or Miss (Scandal in Sweet Side #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">By the Book (Scandal in Sweet Side, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Filthy Liar</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Ruckup (Cape Coral Swamp Cats, #2)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="kit swann" data-role="narrator">
+                <div class="author-name">Kit Swann</div>
+                <div class="author-role">Narrator</div>
+                <div class="links">
+        <a href="https://www.theladyhamlet.com/romance" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/20037687.Kit_Swann" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Kit's Audible List" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Kit Swann')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Kit Swann" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">A Court of Thorns and Roses (A Court of Thorns and Roses, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A Court of Mist and Fury (A Court of Thorns and Roses, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A Court of Wings and Ruin (A Court of Thorns and Roses, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Throne of Glass (Throne of Glass, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A ​Court of Silver Flames (A Court of Thorns and Roses, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A Court of Frost and Starlight (A Court of Thorns and Roses, #3.5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Crown of Midnight (Throne of Glass, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Heir of Fire (Throne of Glass, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Queen of Shadows (Throne of Glass, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Empire of Storms (Throne of Glass, #5)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="maryann jordan" data-role="author">
+                <div class="author-name">Maryann Jordan</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://maryannjordanauthor.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/8052607.Maryann_Jordan" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Maryann's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Maryann's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Maryann Jordan')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Maryann Jordan" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Gabe (Alvarez Security #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Serial Love (Saints Protection &amp; Investigation, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Tony (Alvarez Security #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Love&#x27;s Taming (The Love&#x27;s, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Vinny (Alvarez Security #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Mace (Lighthouse Security Investigations, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Jobe (Alvarez Security #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Healing Love (Saints Protection &amp; Investigations, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Coming Home (Baytown Boys, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Carson (Lighthouse Security Investigations West Coast, #1)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="maxine mitchell" data-role="narrator">
+                <div class="author-name">Maxine Mitchell</div>
+                <div class="author-role">Narrator</div>
+                <div class="links">
+        <a href="https://narrator.page/n/maxine_mitchell" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/7259691.Maxine_Mitchell" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Maxine's Audible List" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Maxine Mitchell')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Maxine Mitchell" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Too Late: Definitive Edition</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Flock (The Ravenhood, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Exodus (The Ravenhood, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Goddess of the Sea: A Two Part &quot;Viking Romance&quot;</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">No Heart But My Own: A Regency Romance</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Large Print Crossword 180 Puzzles: Crossword Puzzle Books for Adults: Cross Words Activity Puzzle book (V5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Large Print Crossword 180 Puzzles: Crossword Super Challenge (Adult Crossword Puzzle Book)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Large Print Crossword 180 Puzzles: Easy Large Print Crossword Puzzles Book For Adults</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Large Print Crossword 180 Puzzles: Crossword Book with 180 Puzzles for Adults. (Seniors and all Puzzle Book Fans v2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">An Olympian&#x27;s oral history: Maxine Mitchell, 1952, 1956, 1960 and 1968 Olympic Games</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="megyn ward" data-role="author">
+                <div class="author-name">Megyn Ward</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.megynward.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/16998177.Megyn_Ward" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Megyn's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Megyn's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Megyn Ward')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Megyn Ward" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Pushing Patrick (The Gilroy Clan, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Claiming Cari (The Gilroy Clan, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Having Henley (The Gilroy Clan, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Taming Tesla (The Gilroy Clan, #6)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Conquering Conner (The Gilroy Clan, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Destroying Declan (The Gilroy Clan, #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Giving Grace (The Gilroy Clan, #8)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Reaching Ryan (The Gilroy Clan, #7)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Tobias (The Kings of Brighton #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Logan (The Kings of Brighton #2)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="mel walker" data-role="author">
+                <div class="author-name">Mel Walker</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.authormelwalker.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/14765560.Mel_Walker" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Mel's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Mel Walker')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Mel Walker" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Grounds for Romance</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Doctor Fix-it</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Doctor Know</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Ryan&#x27;s Kiss (Lake Hope #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Kiss You Back (Spring Hills Ten Year High School Reunion, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Jackson&#x27;s Love (Lake Hope #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Right Guy (Meet Cute Book Club, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Amazing Date</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Somebody&#x27;s Heartbreak</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Stagefight (Internet Famous, #2)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="patricia d. eddy" data-role="author">
+                <div class="author-name">Patricia D. Eddy</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.patriciadeddy.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/7122826.Patricia_D_Eddy" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Patricia's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Patricia's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Patricia D. Eddy')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Patricia D. Eddy" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Breaking His Code (Away From Keyboard, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A Shift in the Water (Elemental Shifter, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">On His Six (Away From Keyboard, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Second Sight (Away From Keyboard, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">In His Silks (Restrained, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">In Her Sights (Away From Keyboard, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Defending His Hope (Away From Keyboard, #10)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">By Lethal Force (Away From Keyboard #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Mistletoe and Mochas (Holidays and Heroes, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Secrets in Blood (In Blood, #1)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="rayne lewis" data-role="author">
+                <div class="author-name">Rayne Lewis</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.raynelewis.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/21357164.Rayne_Lewis" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Rayne's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Rayne Lewis')">
+                        📖 View Books (4)
+                    </div>
+                    <div id="books-Rayne Lewis" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Justice for Mary (Special Forces: Operation Alpha; Hellforce Security: Alpha Team #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Saving Emmy (Special Forces: Operation Alpha; Hellforce Security: Alpha Team #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Mercy for Maven (Special Forces: Operation Alpha; Hellforce Security: Alpha Team #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Avenging Antonia (Special Forces: Operation Alpha)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="riley edwards" data-role="author">
+                <div class="author-name">Riley Edwards</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.rileyedwardsromance.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/15080716.Riley_Edwards" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Riley's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Riley's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Riley Edwards')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Riley Edwards" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Saving Meadow (The Next Generation #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Nixon&#x27;s Promise (Gemini Group #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Damaged (Triple Canopy #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Flawed (Triple Canopy #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Chasing Honor (The Next Generation #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Taking Liberty (The Next Generation #7)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Nightstalker (Red Team #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Dangerous Love (Takeback, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Imperfect (Triple Canopy #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Free (707 Freedom #1)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="robert hatchet" data-role="narrator">
+                <div class="author-name">Robert Hatchet</div>
+                <div class="author-role">Narrator</div>
+                <div class="links">
+        <a href="http://www.robbrinkmann.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/21206042.Robert_Hatchet" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Robert's Audible List" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Robert Hatchet')">
+                        📖 View Books (13)
+                    </div>
+                    <div id="books-Robert Hatchet" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Hooked (Never After, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Scarred (Never After, 2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Wretched (Never After, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Twisted (Never After, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Crossed (Never After, #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Hexed (Never After, #6)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Beneath the Stars (Sugarlake, 1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Be Still My Heart</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Beneath the Stands (Sugarlake, 2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Beneath the Hood (Sugarlake, 3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">My Darlings</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">We&#x27;re All Lying</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Bad Things Happened in This Room</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="samantha brentmoor" data-role="narrator">
+                <div class="author-name">Samantha Brentmoor</div>
+                <div class="author-role">Narrator</div>
+                <div class="links">
+        <a href="https://www.samanthabrentmoor.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/16217293.Samantha_Brentmoor" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Samantha's Audible List" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Samantha Brentmoor')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Samantha Brentmoor" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Faking Ms. Right (Dirty Martini Running Club, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Protecting You (Bailey Brothers, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Obsession Falls (The Haven Brothers, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Chasing Her Fire (Bailey Brothers, #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Fighting for Us (Bailey Brothers, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Unraveling Him (Bailey Brothers, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Marrying Mr. Wrong (Dirty Martini Running Club, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Rushing In (Bailey Brothers, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Falling for My Enemy (Dirty Martini Running Club, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Highball Rush (Bootleg Springs, #6)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="samantha cole" data-role="author">
+                <div class="author-name">Samantha Cole</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://samanthacoleauthor.page/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/5580362.Samantha_A_Cole" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Samantha Cole's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Samantha Cole's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Samantha Cole')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Samantha Cole" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Leather &amp; Lace (Trident Security, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">His Angel (Trident Security, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Topping the Alpha (Trident Security, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Waiting for Him (Trident Security, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Watching from the Shadows (Trident Security, #5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Not Negotiable (Trident Security, #3.5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Tickle His Fancy (Trident Security, #6)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Don&#x27;t Fight It (Hazard Falls, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Absolving His Sins (Trident Security, #7)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Double Down &amp; Dirty (Doms of The Covenant, #1)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="soneela nankani" data-role="narrator">
+                <div class="author-name">Soneela Nankani</div>
+                <div class="author-role">Narrator</div>
+                <div class="links">
+        <a href="https://www.soneela.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/6438287.Soneela_Nankani" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Soneela's Audible List" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Soneela Nankani')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Soneela Nankani" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">The City of Brass (The Daevabad Trilogy, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">You&#x27;ve Reached Sam</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Run Rose Run</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Storyteller&#x27;s Secret: A Novel</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Trial of the Sun Queen (Artefacts of Ouranos, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Kingdom of Copper (The Daevabad Trilogy, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Front Runner (Gold Rush Ranch, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Secret Daughter</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Fall of Ruin and Wrath</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Pain Solution: 5 Steps to Relieve and Prevent Back Pain, Muscle Pain, and Joint Pain Without Medication</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="stephania thompson" data-role="author">
+                <div class="author-name">Stephania Thompson</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://stephaniathompson.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/21677976.Stephania_Thompson" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Stephania's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Stephania Thompson')">
+                        📖 View Books (6)
+                    </div>
+                    <div id="books-Stephania Thompson" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Woven (Charm City Threads Book #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Tangled (Charm City Threads Book #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Unveiling Chaos: Poetic Reflections</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Tiny Tales: Micro Stories That Mess With Your Mind</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Unveiling Motherhood: A Poetic Journey</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Unveiling Love: A Poetic Exploration</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="stephanie rose" data-role="author">
+                <div class="author-name">Stephanie Rose</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://authorstephanierose.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/8475934.Stephanie_Rose" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Stephanie's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Stephanie's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Stephanie Rose')">
+                        📖 View Books (2)
+                    </div>
+                    <div id="books-Stephanie Rose" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Hiding Lies</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Small Town Slasher</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="suanne laqueur" data-role="author">
+                <div class="author-name">Suanne Laqueur</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://suannelaqueurwrites.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/8317803.Suanne_Laqueur#" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Suanne's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Suanne's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Suanne Laqueur')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Suanne Laqueur" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">The Man I Love (The Fish Tales, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">An Exaltation of Larks (Venery, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Give Me Your Answer True (The Fish Tales, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Here to Stay (The Fish Tales, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A Charm of Finches (Venery, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A Scarcity of Condors (Venery, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">A Small Hotel (Small Hotel, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Ones That Got Away (The Fish Tales, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Tales from Cushman Row (Venery, #2.5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Voyages of Trueblood Cay (Venery, #2.75)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="tarina deaton" data-role="author">
+                <div class="author-name">Tarina Deaton</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.tarinadeaton.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/15180621.Tarina_Deaton" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Tarina's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Tarina's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Tarina Deaton')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Tarina Deaton" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Stitched Up Heart (Combat Hearts, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Rescued Heart (Combat Hearts, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Locked-Down Heart (Combat Hearts, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Half-Broke Heart (Combat Hearts, #1.5)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Imperfect Heart (Combat Hearts, #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Found in the Lost (The Leonidas Corporation #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Truth In The Lie (The Leonidas Corporation #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Make Me Believe</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Flaw in the Defense (The Leonidas Corporation, #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Cuore ferito: Serie Combat hearts Vol. #1 (Follie in Passion)</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="tracey jerald" data-role="author">
+                <div class="author-name">Tracey Jerald</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://www.traceyjerald.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/17258111.Tracey_Jerald" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Tracey's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Tracey's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Tracey Jerald')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Tracey Jerald" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">Free to Breathe</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Free to Dream</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Free to Run</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Free to Believe (Amaryllis #4)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Free to Live</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Free to Rejoice</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Perfect Assumption (Midas #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Return by Air (Glacier Adventure, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Perfect Composition (Midas #3)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Free to Dance</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+            <div class="author-card" data-name="xio axelrod" data-role="author">
+                <div class="author-name">Xio Axelrod</div>
+                <div class="author-role">Author</div>
+                <div class="links">
+        <a href="https://xioaxelrod.com/" class="link-btn" target="_blank"><span>🌐</span>Website</a><a href="https://www.goodreads.com/author/show/7105890.Xio_Axelrod" class="link-btn" target="_blank"><span>📚</span>Goodreads</a><a href="https://Xio's Amazon Page" class="link-btn" target="_blank"><span>🛒</span>Amazon</a><a href="https://Xio's Audible Page" class="link-btn" target="_blank"><span>🎧</span>Audible</a></div>
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('Xio Axelrod')">
+                        📖 View Books (10)
+                    </div>
+                    <div id="books-Xio Axelrod" class="books-list">
+            
+                    <div class="book-item">
+                        <div class="book-title">The Girl with Stars in Her Eyes (The Lillys, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Girls with Bad Reputations (The Lillys, #2)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Love on the Byline (Plays and Players, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">The Calum</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Falling Stars (Falling Stars, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Fast Forward (Alt Er Love, #1)</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Camden</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Love Is All: Volume 6</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">When Frankie Meets Johnny</div>
+                        
+                        
+                    </div>
+                
+                    <div class="book-item">
+                        <div class="book-title">Love Is All: Volume 2</div>
+                        
+                        
+                    </div>
+                
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Compiled for Charm City Romanticon 2026 by Plot Twists & Pivot Tables
+        </div>
+    </div>
+    
+    <script>
+        // Update stats
+        document.getElementById('stats').innerHTML = `📊 38 Authors & Narrators • 441 Books`;
+        
+        function toggleBooks(author) {
+            const booksList = document.getElementById('books-' + author);
+            booksList.classList.toggle('show');
+        }
+        
+        function searchAuthors() {
+            const searchTerm = document.querySelector('.search-input').value.toLowerCase();
+            const cards = document.querySelectorAll('.author-card');
+            let visibleCount = 0;
+            
+            cards.forEach(card => {
+                const name = card.dataset.name;
+                const role = card.dataset.role;
+                const isVisible = name.includes(searchTerm) || role.includes(searchTerm);
+                
+                if (isVisible) {
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+            
+            // Update stats
+            if (searchTerm) {
+                document.getElementById('stats').innerHTML = `🔍 Showing ${visibleCount} results for "${searchTerm}"`;
+            } else {
+                document.getElementById('stats').innerHTML = `📊 38 Authors & Narrators • 441 Books`;
+            }
+        }
+        
+        // Add some smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+    

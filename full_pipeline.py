@@ -314,31 +314,93 @@ def create_html_dashboard():
             to { opacity: 1; transform: translateY(0); }
         }
         
-        .book-item {
-            padding: 12px;
-            border-bottom: 1px solid #f0f0f0;
-            transition: background 0.2s ease;
+        .books-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.85em;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
-        .book-item:hover {
+        .books-table th {
+            background: #EC008C;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 0.8em;
+            border-bottom: 2px solid #d1007a;
+        }
+        
+        .books-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: top;
+        }
+        
+        .books-table tr:hover {
             background: #f8f9fa;
         }
         
-        .book-title {
+        .books-table tr:nth-child(even) {
+            background: #fafafa;
+        }
+        
+        .books-table tr:nth-child(even):hover {
+            background: #f0f0f0;
+        }
+        
+        .book-title-cell {
             font-weight: bold;
             color: #333;
-            margin-bottom: 4px;
+            min-width: 150px;
         }
         
-        .book-series {
+        .series-cell {
             color: #666;
-            font-size: 0.85em;
+            min-width: 120px;
         }
         
-        .book-meta {
-            color: #888;
-            font-size: 0.8em;
-            margin-top: 4px;
+        .yes-no-cell {
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .yes-cell {
+            color: #28a745;
+        }
+        
+        .no-cell {
+            color: #dc3545;
+        }
+        
+        .link-cell a {
+            color: #EC008C;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .link-cell a:hover {
+            text-decoration: underline;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .books-table {
+                font-size: 0.75em;
+            }
+            
+            .books-table th,
+            .books-table td {
+                padding: 8px 4px;
+            }
         }
         
         .footer {
@@ -470,41 +532,121 @@ def create_html_dashboard():
                         📖 View Books ({len(books)})
                     </div>
                     <div id="books-{clean_person}" class="books-list">
+                        <div class="table-container">
+                            <table class="books-table">
+                                <thead>
+                                    <tr>
+                                        <th>Book Title</th>
+                                        <th>Series</th>
+                                        <th>Order</th>
+                                        <th>Published</th>
+                                        <th>Formats</th>
+                                        <th>Buy Links</th>
+                                        <th>Rent Links</th>
+                                        <th>Audio</th>
+                                        <th>Narrators</th>
+                                        <th>KU</th>
+                                        <th>Kobo+</th>
+                                        <th>Genre</th>
+                                        <th>Type</th>
+                                        <th>Notes</th>
+                                        <th>Pen Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
             """
             
             for book in books:
-                title = escape(str(book.get("Book Title", "Unknown Title")))
-                series = escape(str(book.get("Series Title", "")))
-                series_order = escape(str(book.get("Series Order", "")))
-                published = escape(str(book.get("Published Date", "")))
-                genre = escape(str(book.get("Genre", "")))
+                # Clean and escape all data
+                def clean_field(field_value):
+                    if pd.isna(field_value) or str(field_value).strip() in ['', 'nan', 'None']:
+                        return ""
+                    return escape(str(field_value).strip())
                 
-                series_info = ""
-                if series and series != "nan":
-                    series_info = f'<div class="book-series">📚 {series}'
-                    if series_order and series_order != "nan":
-                        series_info += f' #{series_order}'
-                    series_info += '</div>'
+                def format_yes_no(field_value):
+                    clean_val = clean_field(field_value).lower()
+                    if clean_val in ['yes', 'y', 'true', '1']:
+                        return '<span class="yes-no-cell yes-cell">✓ Yes</span>'
+                    elif clean_val in ['no', 'n', 'false', '0']:
+                        return '<span class="yes-no-cell no-cell">✗ No</span>'
+                    elif clean_val:
+                        return f'<span class="yes-no-cell">{escape(str(field_value))}</span>'
+                    else:
+                        return '<span class="yes-no-cell">-</span>'
                 
-                meta_info = []
-                if published and published != "nan":
-                    meta_info.append(f"📅 {published}")
-                if genre and genre != "nan":
-                    meta_info.append(f"🏷️ {genre}")
+                def format_links(links_text):
+                    if not links_text or pd.isna(links_text) or str(links_text).strip() in ['', 'nan']:
+                        return '-'
+                    
+                    links_str = str(links_text).strip()
+                    # Check if it looks like URLs
+                    if 'http' in links_str:
+                        # Split by common separators and create clickable links
+                        potential_links = []
+                        for separator in [',', '\n', ';', ' ']:
+                            if separator in links_str:
+                                potential_links = [link.strip() for link in links_str.split(separator) if link.strip()]
+                                break
+                        
+                        if not potential_links:
+                            potential_links = [links_str]
+                        
+                        clickable_links = []
+                        for link in potential_links:
+                            if link.startswith('http'):
+                                clickable_links.append(f'<a href="{link}" target="_blank">Link</a>')
+                            else:
+                                clickable_links.append(escape(link))
+                        
+                        return '<div class="link-cell">' + ' • '.join(clickable_links) + '</div>'
+                    else:
+                        return f'<div class="link-cell">{escape(links_str)}</div>'
                 
-                meta_html = ""
-                if meta_info:
-                    meta_html = f'<div class="book-meta">{" • ".join(meta_info)}</div>'
+                # Extract all fields
+                title = clean_field(book.get("Book Title", ""))
+                series = clean_field(book.get("Series Title", ""))
+                series_order = clean_field(book.get("Series Order", ""))
+                published_date = clean_field(book.get("Published Date", ""))
+                formats = clean_field(book.get("Formats Available", ""))
+                buy_links = format_links(book.get("Buy Links", ""))
+                rent_links = format_links(book.get("Rent Links", ""))
+                audiobook = format_yes_no(book.get("Audiobook (Y/N)", ""))
+                narrators = clean_field(book.get("Narrators", ""))
+                kindle_unlimited = format_yes_no(book.get("Kindle Unlimited (Y/N)", ""))
+                kobo_plus = format_yes_no(book.get("Kobo+ (Y/N)", ""))
+                genre = clean_field(book.get("Genre", ""))
+                standalone_series = clean_field(book.get("Standalone/Series", ""))
+                notes = clean_field(book.get("Other Notes", ""))
+                pen_name = clean_field(book.get("Pen Name", ""))
+                
+                # Only show pen name if different from main author name
+                if pen_name.lower() == person.lower():
+                    pen_name = ""
                 
                 html_content += f"""
-                    <div class="book-item">
-                        <div class="book-title">{title}</div>
-                        {series_info}
-                        {meta_html}
-                    </div>
+                    <tr>
+                        <td class="book-title-cell">{title or "-"}</td>
+                        <td class="series-cell">{series or "-"}</td>
+                        <td>{series_order or "-"}</td>
+                        <td>{published_date or "-"}</td>
+                        <td>{formats or "-"}</td>
+                        <td>{buy_links}</td>
+                        <td>{rent_links}</td>
+                        <td>{audiobook}</td>
+                        <td>{narrators or "-"}</td>
+                        <td>{kindle_unlimited}</td>
+                        <td>{kobo_plus}</td>
+                        <td>{genre or "-"}</td>
+                        <td>{standalone_series or "-"}</td>
+                        <td>{notes or "-"}</td>
+                        <td>{pen_name or "-"}</td>
+                    </tr>
                 """
             
             html_content += """
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             """
