@@ -120,7 +120,6 @@ thin_border = Border(
     bottom=Side(style='thin', color='000000')
 )
 
-
 def clean_url(value: str) -> str:
     """
     Clean up a URL by adding the HTTPS protocol if it's not already there.
@@ -164,6 +163,7 @@ for person in full_data["Author"].dropna().unique():
     goodreads_url = clean_url(author_row.get("Goodreads Page"))
     amazon_url = clean_url(author_row.get("Amazon Page"))
     audible_url = clean_url(author_row.get("Audible Page"))
+    print(f"Linking {person} ({role}) with URLs: Website={website_url}, Goodreads={goodreads_url}, Amazon={amazon_url}, Audible={audible_url}")
     # Create a new sheet for each author
     tab_name = sanitize_sheet_name(person)
     row_num = dashboard.max_row + 1
