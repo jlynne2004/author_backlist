@@ -156,6 +156,8 @@ def sanitize_sheet_name(name):
     # Truncate to 31 characters
     return clean_name[:31]
 
+dashboard_data = []
+
 # Create a dashboard with author names and links to their tabs
 for person in full_data["Author"].dropna().unique():
     person_data = full_data[full_data["Author"].str.lower() == person.lower()]
@@ -169,16 +171,17 @@ for person in full_data["Author"].dropna().unique():
         if not author_row:
             print(f"⚠️  No author row found for {person}. Skipping...")
             continue
-    website_url = clean_url(author_row.get("Website"))
-    goodreads_url = clean_url(author_row.get("Goodreads Page"))
-    amazon_url = clean_url(author_row.get("Amazon Page"))
-    audible_url = clean_url(author_row.get("Audible Page"))
+    website_url = clean_url(author_row.get("Website",""))
+    goodreads_url = clean_url(author_row.get("Goodreads Page",""))
+    amazon_url = clean_url(author_row.get("Amazon Page",""))
+    audible_url = clean_url(author_row.get("Audible Page",""))
     # Create a new sheet for each author
     tab_name = sanitize_sheet_name(person)
-    row_num = dashboard.max_row + 1
-    dashboard.cell(row=row_num, column=1).value = person
-    dashboard.cell(row=row_num, column=2).value = role
-    dashboard.cell(row=row_num, column=3).value = f'=HYPERLINK("#{quote_sheetname(tab_name)}!A1", "Go To Tab")'
+    dashboard_data.append({
+        'name': person, 
+        'role': role, 
+        'tab_name': tab_name,
+    })
     ws = wb.create_sheet(tab_name)
 
     ws.merge_cells('A1:B1')
@@ -298,9 +301,20 @@ for person in full_data["Author"].dropna().unique():
             if col_num == 5:  # Published Date column
                 cell.number_format = "MM/DD/YYYY"
 
+# Now populate the dashboard with proper hyperlinks
+for entry in dashboard_data:
+    row_num = dashboard.max_row + 1
+    dashboard.cell(row=row_num, column=1).value = entry['name']
+    dashboard.cell(row=row_num, column=2).value = entry['role']
 
-    #dashboard.append([person, role, f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'])
+    # Create the hyperlink cell properly
+    link_cell = dashboard.cell(row=row_num, column=3)
+    link_cell.value = "Go to Tab"
+    # Use a simpler internal hyperlink format that Excel accepts better
+    link_cell.hyperlink = f"#{entry['tab_name']}!A1"
+    link_cell.style = "Hyperlink"
 
+# Style the dashboard header and borders
 for col in range(1, 4):
     cell = dashboard.cell(row=1, column=col)
     cell.fill = hot_pink_fill
