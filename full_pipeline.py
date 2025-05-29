@@ -1,14 +1,12 @@
-# full_pipeline.py (updated with new author detection)
+# full_pipeline.py (HTML Dashboard Version - No More Excel Drama!)
 
 import os
 from scrape_goodreads_backlist import search_goodreads_author, scrape_goodreads_books
 import pandas as pd
-from openpyxl import Workbook, load_workbook, utils
-from openpyxl.utils import get_column_letter, quote_sheetname
-from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
-from unidecode import unidecode
+from openpyxl import load_workbook
 import time
 import re
+from html import escape
 
 # ----------------------- SCRAPE PHASE -----------------------
 print("[1/2] Scraping Goodreads backlists...")
@@ -23,24 +21,17 @@ for row in ws.iter_rows(min_row=2, values_only=True):
     role = row[1]
     other_names = row[2]
     website_link = row[3]
-    print(f"Author Website: {row[3]}")
     goodreads_link = row[4]
-    print(f"Goodreads Page: {row[4]}")
     amazon_link = row[5]
-    print(f"Amazon Page: {row[5]}")
     audible_link = row[6]
-    print(f"Audible Page: {row[6]}")
+    
     data.append({
         "Author Name": author,
         "Role": role,
         "Other Names": other_names,
-        "Website Display": "Author Website",
         "Website": website_link,
-        "Goodreads Display": "Goodreads Page",
         "Goodreads Page": goodreads_link,
-        "Amazon Display": "Amazon Page",
         "Amazon Page": amazon_link,
-        "Audible Display": "Audible Page",
         "Audible Page": audible_link
     })
 
@@ -101,299 +92,491 @@ else:
 full_data.to_excel("author_backlists_scraped.xlsx", index=False)
 print("Scraping complete. Data saved to author_backlists_scraped.xlsx\n")
 
-# ----------------------- EXCEL BUILD PHASE -----------------------
-print("[2/2] Building Excel dashboard...")
+# ----------------------- HTML DASHBOARD PHASE -----------------------
+print("[2/2] Building HTML dashboard...")
 
-wb = Workbook()
-default_sheet = wb.active
-wb.remove(default_sheet)
-
-dashboard = wb.create_sheet("Dashboard")
-dashboard.append(["Author", "Role", "Link"])
-
-hot_pink_fill = PatternFill(start_color="EC008C", end_color="EC008C", fill_type="solid")
-black_font_bold = Font(color="000000", bold=True)
-gray_fill = PatternFill(start_color="F7F7F7", end_color="F7F7F7", fill_type="solid")
-thin_border = Border(
-    left=Side(style='thin', color='000000'),
-    right=Side(style='thin', color='000000'),
-    top=Side(style='thin', color='000000'),
-    bottom=Side(style='thin', color='000000')
-)
-
-def clean_url(value: str) -> str:
-    """
-    Clean up a URL by adding the HTTPS protocol if it's not already there.
-
-    Args:
-        value (str): The URL to clean up.
-
-    Returns:
-        str: The cleaned up URL.
-    """
-    value = str(value).strip()
-    if pd.isna(value):
-        return ""  # Return empty string if value is missing or NULL
-    elif value.startswith("https://") or value.startswith("http://"):
-        return value  # Return the value as is if it already has a protocol
-    else:
-        return "https://" + value  # Add HTTPS protocol if it's not already there
-
-#Sanitize sheet name
-def sanitize_sheet_name(name):
-    """
-    Sanitize a sheet name by removing invalid characters and truncating to 31 characters.
-
-    Args:
-        name (str): The name to sanitize.
-
-    Returns:
-        str: The sanitized name.
-    """
-    # Remove invalid characters
-    clean_name = unidecode(name)
-    clean_name = re.sub(r'[\\/*?:"<>|]', '', name)
-    # Truncate to 31 characters
-    return clean_name[:31]
-
-def create_short_tab_name(full_name):
-    """
-    Create a short tab name using first name + last initial
-    Example: "John Smith" -> "John S"
-    """
-    # Clean the name first
-    clean_name = str(full_name).strip()
+def clean_url(url):
+    """Clean and validate URL"""
+    if not url or pd.isna(url) or str(url).strip() == "":
+        return None
     
-    # Split into parts
-    name_parts = clean_name.split()
-    
-    if len(name_parts) == 1:
-        # Just one name, use it as is (up to 15 chars to be safe)
-        return name_parts[0][:15]
-    elif len(name_parts) >= 2:
-        # First name + last initial
-        first_name = name_parts[0]
-        last_initial = name_parts[-1][0].upper()  # Use last part's first letter
-        short_name = f"{first_name} {last_initial}"
-        return short_name[:15]  # Keep it short to avoid issues
+    url = str(url).strip()
+    if url.startswith("http://") or url.startswith("https://"):
+        return url
     else:
-        return "Author"
+        return "https://" + url
 
-dashboard_data = []
-
-# Create a dashboard with author names and links to their tabs
-for person in full_data["Author"].dropna().unique():
-    person_data = full_data[full_data["Author"].str.lower() == person.lower()]
-    role =  person_data["Role"].iloc[0] if "Role" in person_data else "Author"
-    # Find the author row in the original dataframe
-    author_row = None
-    for entry in data:
-        if entry["Author Name"] == person:
-            author_row = entry
-            break
+def create_html_dashboard():
+    html_content = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charm City Romanticon 2026 - Author Backlists</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #EC008C;
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .support-message {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            margin: 25px;
+            border-radius: 12px;
+            border-left: 6px solid #EC008C;
+            font-style: italic;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .support-message strong {
+            color: #EC008C;
+            font-size: 1.1em;
+        }
+        
+        .search-bar {
+            padding: 20px;
+            text-align: center;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .search-input {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            width: 300px;
+            max-width: 90%;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-input:focus {
+            border-color: #EC008C;
+        }
+        
+        .authors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 25px;
+            padding: 30px;
+        }
+        
+        .author-card {
+            background: white;
+            border: 2px solid #EC008C;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .author-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #EC008C, #ff6b9d);
+        }
+        
+        .author-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border-color: #d1007a;
+        }
+        
+        .author-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #EC008C;
+            margin-bottom: 8px;
+        }
+        
+        .author-role {
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+            font-size: 1.05em;
+        }
+        
+        .links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 15px;
+            background: linear-gradient(45deg, #EC008C, #ff6b9d);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .link-btn:hover {
+            background: linear-gradient(45deg, #d1007a, #e55a87);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(236, 0, 140, 0.3);
+        }
+        
+        .link-btn span {
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
+        
+        .books-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        .books-toggle {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border: 2px solid #EC008C;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            color: #EC008C;
+            text-align: center;
+        }
+        
+        .books-toggle:hover {
+            background: #EC008C;
+            color: white;
+        }
+        
+        .books-list {
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 0.95em;
+        }
+        
+        .books-list.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .book-item {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s ease;
+        }
+        
+        .book-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .book-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .book-series {
+            color: #666;
+            font-size: 0.85em;
+        }
+        
+        .book-meta {
+            color: #888;
+            font-size: 0.8em;
+            margin-top: 4px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            font-style: italic;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+        
+        .stats {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        @media (max-width: 768px) {
+            .authors-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .support-message {
+                margin: 15px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Charm City Romanticon 2026</h1>
+            <p>Author & Narrator Backlists</p>
+        </div>
+        
+        <div class="support-message">
+            <strong>💡 Support Authors Directly</strong><br>
+            Whenever possible, consider purchasing books directly from the author's website if they have a store.
+            Amazon takes a significant portion of royalties and can penalize authors for piracy and other issues beyond their control — even removing their accounts.
+            We understand that Amazon is convenient and affordable, and authors still rely on it.
+            But every direct purchase makes a bigger impact. 💖
+        </div>
+        
+        <div class="search-bar">
+            <input type="text" class="search-input" placeholder="Search authors..." onkeyup="searchAuthors()">
+        </div>
+        
+        <div class="stats" id="stats">
+            Loading authors...
+        </div>
+        
+        <div class="authors-grid" id="authorsGrid">
+"""
+    
+    # Track stats
+    total_authors = 0
+    total_books = 0
+    
+    # Add each author
+    for person in sorted(full_data["Author"].dropna().unique()):
+        person_data = full_data[full_data["Author"].str.lower() == person.lower()]
+        role = person_data["Role"].iloc[0] if "Role" in person_data else "Author"
+        
+        # Find author info
+        author_row = None
+        for entry in data:
+            if entry["Author Name"] == person:
+                author_row = entry
+                break
+        
         if not author_row:
-            print(f"⚠️  No author row found for {person}. Skipping...")
             continue
-    website_url = clean_url(author_row.get("Website",""))
-    goodreads_url = clean_url(author_row.get("Goodreads Page",""))
-    amazon_url = clean_url(author_row.get("Amazon Page",""))
-    audible_url = clean_url(author_row.get("Audible Page",""))
-    # Create a new short tab name sheet for each author
-    tab_name = create_short_tab_name(person)
+        
+        total_authors += 1
+        books = person_data.to_dict('records')
+        total_books += len(books)
+        
+        # Clean person name for JavaScript
+        clean_person = escape(person).replace("'", "\\'")
+        
+        html_content += f"""
+            <div class="author-card" data-name="{escape(person.lower())}" data-role="{escape(role.lower())}">
+                <div class="author-name">{escape(person)}</div>
+                <div class="author-role">{escape(role)}</div>
+                <div class="links">
+        """
+        
+        # Add links only if they exist
+        links_added = 0
+        if clean_url(author_row.get("Website")):
+            html_content += f'<a href="{clean_url(author_row.get("Website"))}" class="link-btn" target="_blank"><span>🌐</span>Website</a>'
+            links_added += 1
+        
+        if clean_url(author_row.get("Goodreads Page")):
+            html_content += f'<a href="{clean_url(author_row.get("Goodreads Page"))}" class="link-btn" target="_blank"><span>📚</span>Goodreads</a>'
+            links_added += 1
+        
+        if clean_url(author_row.get("Amazon Page")):
+            html_content += f'<a href="{clean_url(author_row.get("Amazon Page"))}" class="link-btn" target="_blank"><span>🛒</span>Amazon</a>'
+            links_added += 1
+        
+        if clean_url(author_row.get("Audible Page")):
+            html_content += f'<a href="{clean_url(author_row.get("Audible Page"))}" class="link-btn" target="_blank"><span>🎧</span>Audible</a>'
+            links_added += 1
+        
+        if links_added == 0:
+            html_content += '<div style="text-align: center; color: #999; font-style: italic;">Links coming soon!</div>'
+        
+        html_content += '</div>'
+        
+        # Add books section
+        if books:
+            html_content += f"""
+                <div class="books-section">
+                    <div class="books-toggle" onclick="toggleBooks('{clean_person}')">
+                        📖 View Books ({len(books)})
+                    </div>
+                    <div id="books-{clean_person}" class="books-list">
+            """
+            
+            for book in books:
+                title = escape(str(book.get("Book Title", "Unknown Title")))
+                series = escape(str(book.get("Series Title", "")))
+                series_order = escape(str(book.get("Series Order", "")))
+                published = escape(str(book.get("Published Date", "")))
+                genre = escape(str(book.get("Genre", "")))
+                
+                series_info = ""
+                if series and series != "nan":
+                    series_info = f'<div class="book-series">📚 {series}'
+                    if series_order and series_order != "nan":
+                        series_info += f' #{series_order}'
+                    series_info += '</div>'
+                
+                meta_info = []
+                if published and published != "nan":
+                    meta_info.append(f"📅 {published}")
+                if genre and genre != "nan":
+                    meta_info.append(f"🏷️ {genre}")
+                
+                meta_html = ""
+                if meta_info:
+                    meta_html = f'<div class="book-meta">{" • ".join(meta_info)}</div>'
+                
+                html_content += f"""
+                    <div class="book-item">
+                        <div class="book-title">{title}</div>
+                        {series_info}
+                        {meta_html}
+                    </div>
+                """
+            
+            html_content += """
+                    </div>
+                </div>
+            """
+        
+        html_content += "</div>"
+    
+    html_content += f"""
+        </div>
+        
+        <div class="footer">
+            Compiled for Charm City Romanticon 2026 by Plot Twists & Pivot Tables
+        </div>
+    </div>
+    
+    <script>
+        // Update stats
+        document.getElementById('stats').innerHTML = `📊 {total_authors} Authors & Narrators • {total_books} Books`;
+        
+        function toggleBooks(author) {{
+            const booksList = document.getElementById('books-' + author);
+            booksList.classList.toggle('show');
+        }}
+        
+        function searchAuthors() {{
+            const searchTerm = document.querySelector('.search-input').value.toLowerCase();
+            const cards = document.querySelectorAll('.author-card');
+            let visibleCount = 0;
+            
+            cards.forEach(card => {{
+                const name = card.dataset.name;
+                const role = card.dataset.role;
+                const isVisible = name.includes(searchTerm) || role.includes(searchTerm);
+                
+                if (isVisible) {{
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                }} else {{
+                    card.classList.add('hidden');
+                }}
+            }});
+            
+            // Update stats
+            if (searchTerm) {{
+                document.getElementById('stats').innerHTML = `🔍 Showing ${{visibleCount}} results for "${{searchTerm}}"`;
+            }} else {{
+                document.getElementById('stats').innerHTML = `📊 {total_authors} Authors & Narrators • {total_books} Books`;
+            }}
+        }}
+        
+        // Add some smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {{
+            anchor.addEventListener('click', function (e) {{
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({{
+                    behavior: 'smooth'
+                }});
+            }});
+        }});
+    </script>
+</body>
+</html>
+    """
+    
+    # Save the HTML file
+    with open("charm_city_romanticon_2026_backlists.html", "w", encoding="utf-8") as f:
+        f.write(html_content)
+    
+    print("✅ HTML Dashboard created: charm_city_romanticon_2026_backlists.html")
+    print(f"   📊 {total_authors} authors/narrators with {total_books} total books")
+    print("   🌐 Just double-click the file to open in your browser!")
+    print("   📱 Works on desktop, tablet, and mobile")
 
-    # Handle potential duplicate tab names by appending a number if needed
-    original_tab_name = tab_name
-    counter = 1
-    existing_tabs = [sheet.title for sheet in wb.worksheets]
-    while tab_name in existing_tabs:
-        tab_name = f"{original_tab_name} {counter}"
-        counter += 1
-    print(f"Creating tab for {person} with name: {tab_name}")
-
-    # Store dashboard data for later
-    dashboard_data.append({
-        'name': person, 
-        'role': role, 
-        'tab_name': tab_name,
-    })
-    ws = wb.create_sheet(tab_name)
-
-    ws.merge_cells('A1:B1')
-    ws['A1'] = f"Connect with {person}"
-    ws['A1'].alignment = Alignment(horizontal='left')
-    ws['A1'].font = black_font_bold
-    ws['A1'].fill = hot_pink_fill
-
-    for row in range(1, 6):
-        ws[f'A{row}'].border = thin_border
-        ws[f'B{row}'].border = thin_border
-
-    # Only show labels and links if URLs exist
-    if website_url and  website_url != "https://":
-        ws["A2"] = "🌐 Website"
-        ws["B2"].value = author_row.get("Website Display", "Author Website")
-        ws["B2"].hyperlink = website_url
-        ws["B2"].style = "Hyperlink"
-    else:
-        ws["A2"].value = "🌐 Website"
-        ws["B2"].value = ""
-        print(f"⚠️  No website found for {person}")
-
-    if goodreads_url and goodreads_url != "https://":
-        ws["A3"] = "📚 Goodreads"
-        ws["B3"].value = author_row.get("Goodreads Display", "Goodreads Page")
-        ws["B3"].hyperlink = goodreads_url
-        ws["B3"].style = "Hyperlink"
-    else:
-        ws["A3"] = "📚 Goodreads"
-        ws["B3"].value = ""
-        print(f"⚠️  No Goodreads page found for {person}")
-
-    if amazon_url and amazon_url != "https://":
-        ws["A4"] = "🛒 Amazon"
-        ws["B4"].value = author_row.get("Amazon Display", "Amazon Page")
-        ws["B4"].hyperlink = amazon_url
-        ws["B4"].style = "Hyperlink"
-    else:
-        ws["A4"] = "🛒 Amazon"
-        ws["B4"].value = ""
-        print(f"⚠️  No Amazon page found for {person}")
- 
-    if audible_url and audible_url != "https://":
-        ws["A5"] = "🎧 Audible"
-        ws["B5"].value = author_row.get("Audible Display", "Audible Page")
-        ws["B5"].hyperlink = audible_url
-        ws["B5"].style = "Hyperlink"
-    else:
-        ws["A5"] = "🎧 Audible"
-        ws["B5"].value = ""
-        print(f"⚠️  No Audible page found for {person}")
-
-    if role != "Author":
-        headers = [
-            "Narrator","Book Title", "Series Title", "Author","Series Order", "Published Date",
-            "Genre", "Standalone/Series", "Other Notes", "Audiobook (Y/N)", 
-            "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)", 
-        ]
-        if person_data["Author"].iloc[0] == person_data["Pen Name"].iloc[0]:
-            headers.append("Pen Name")
-    else:
-        headers = [
-            "Author", "Book Title", "Series Title", "Series Order", "Published Date",
-            "Formats Available", "Buy Links", "Rent Links", "Audiobook (Y/N)",
-            "Narrators", "Kindle Unlimited (Y/N)", "Kobo+ (Y/N)",
-            "Genre", "Standalone/Series", "Other Notes", "Pen Name"
-        ]
-        if person_data["Author"].iloc[0] == person_data["Pen Name"].iloc[0]:
-            headers.append("Pen Name")
-
-    ws.append([])
-    ws.append([])
-    ws.append(headers)
-
-    for col_num, column_title in enumerate(headers, 1):
-        cell = ws[f'{get_column_letter(col_num)}7']
-        cell.font = black_font_bold
-        cell.fill = hot_pink_fill
-        cell.alignment = Alignment(horizontal='center')
-        cell.border = thin_border
-
-    for idx, row_data in person_data.iterrows():
-        person_name = person.strip().lower()
-        narrators_raw = row_data.get("Narrators", "")
-        narrators = str(narrators_raw).lower()
-        if narrators == "nan":
-            narrators = ""
-
-        if person_name in narrators and role.lower() == "author":
-            book_role = "Author & Narrator"
-        elif person_name in narrators:
-            book_role = "Narrator"
-        else:
-            book_role = "Author"
-
-        row_list = [
-            row_data.get("Author", "") if role != "Narrator" else row_data.get("Narrator", ""),
-            row_data.get("Book Title", ""),
-            row_data.get("Series Title", ""),
-            row_data.get("Series Order", ""),
-            row_data.get("Published Date", ""),
-            row_data.get("Formats Available", ""),
-            row_data.get("Buy Links", ""),
-            row_data.get("Rent Links", ""),
-            row_data.get("Audiobook (Y/N)", ""),
-            row_data.get("Narrators", ""),
-            row_data.get("Kindle Unlimited (Y/N)", ""),
-            row_data.get("Kobo+ (Y/N)", ""),
-            row_data.get("Genre", ""),
-            row_data.get("Standalone/Series", ""),
-            row_data.get("Other Notes", ""),
-            row_data.get("Pen Name", "") if row_data.get("Pen Name","") != row_data.get("Author", "") else ""
-        ]
-
-        ws.append(row_list)
-
-        for col_num in range(1, len(headers) + 1):
-            cell = ws[f"{get_column_letter(col_num)}{idx + 1}"]
-            if idx % 2 == 1:
-                cell.fill = gray_fill
-            cell.border = thin_border
-            if col_num == 5:  # Published Date column
-                cell.number_format = "MM/DD/YYYY"
-
-# Now populate the dashboard with the simplified tab name
-for entry in dashboard_data:
-    row_num = dashboard.max_row + 1
-    dashboard.cell(row=row_num, column=1).value = entry['name']
-    dashboard.cell(row=row_num, column=2).value = entry['role']
-
-    # Create the hyperlink cell properly
-    link_cell = dashboard.cell(row=row_num, column=3)
-    link_cell.value = "Go to Tab"
-    # Use a simpler internal hyperlink format that Excel accepts better
-    link_cell.hyperlink = f"#{entry['tab_name']}!A1"
-    link_cell.style = "Hyperlink"
-    print(f"Added {entry['name']} to dashboard with link to {entry['tab_name']}")
-
-# Style the dashboard header and borders
-for col in range(1, 4):
-    cell = dashboard.cell(row=1, column=col)
-    cell.fill = hot_pink_fill
-    cell.font = black_font_bold
-    cell.alignment = Alignment(horizontal='center')
-    cell.border = thin_border
-
-for row_idx in range(1, dashboard.max_row + 1):
-    for col_idx in range(1, 4):
-        dashboard.cell(row=row_idx, column=col_idx).border = thin_border
-
-# Add support message to the right of the dashboard table
-support_col_start = 5 # Column E
-support_col_end = 8 # Column H
-support_row_start = 2 
-support_row_end = support_row_start + 14 # Spread over 13 rows
-
-dashboard.merge_cells(start_row=support_row_start, start_column=support_col_start, end_row=support_row_end, end_column=support_col_end)
-cell = dashboard.cell(row=support_row_start, column=support_col_start)
-cell.value = (
-    "💡 Support Authors Directly\n"
-    "Whenever possible, consider purchasing books directly from the author's website if they have a store.\n"
-    "Amazon takes a significant portion of royalties and can penalize authors for piracy and other issues beyond their control — even removing their accounts.\n\n"
-    "We understand that Amazon is convenient and affordable, and authors still rely on it.\n"
-    "But every direct purchase makes a bigger impact. 💖"
-)
-
-cell.alignment = Alignment(horizontal='left', vertical='top', wrap_text=True)
-cell.font = Font(italic=True)
-cell.border = thin_border
-
-# Add a footer message
-footer_row = dashboard.max_row + 3
-footer_text = "Compiled for Charm City Romanticon 2026 by Plot Twists & Pivot Tables"
-dashboard.merge_cells(start_row=footer_row, start_column=1, end_row=footer_row, end_column=2)
-dashboard.cell(row=footer_row, column=1).value = footer_text
-dashboard.cell(row=footer_row, column=1).alignment = Alignment(horizontal='center')
-dashboard.cell(row=footer_row, column=1).font = Font(italic=True)
-
-wb.save("author_backlist_final.xlsx")
-print("Done! Your full event-ready Excel dashboard with simplified tab names is ready: author_backlist_final.xlsx")
+# Create the beautiful HTML dashboard
+create_html_dashboard()
+print("\n🎉 Done! No more Excel drama - just pure HTML awesomeness!")
