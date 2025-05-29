@@ -22,16 +22,16 @@ for row in ws.iter_rows(min_row=2, values_only=False):
     role = row[1].value
     other_names = row[2].value
     website_display = row[3].value
-    website_link = row[3].hyperlink.target if row[3].hyperlink else ""
+    website_link = row[3].hyperlink.target if row[3].hyperlink else row[3].value
     print(f"Author Website: {row[3].hyperlink}")
     goodreads_display = row[4].value
-    goodreads_link = row[4].hyperlink.target if row[4].hyperlink else ""
+    goodreads_link = row[4].hyperlink.target if row[4].hyperlink else row[4].value
     print(f"Goodreads Page: {row[4].hyperlink}")
     amazon_display = row[5].value
-    amazon_link = row[5].hyperlink.target if row[5].hyperlink else ""
+    amazon_link = row[5].hyperlink.target if row[5].hyperlink else row[5].value
     print(f"Amazon Page: {row[5].hyperlink}")
     audible_display = row[6].value
-    audible_link = row[6].hyperlink.target if row[6].hyperlink else ""
+    audible_link = row[6].hyperlink.target if row[6].hyperlink else row[6].value
     print(f"Audible Page: {row[6].hyperlink}")
     data.append({
         "Author Name": author,
