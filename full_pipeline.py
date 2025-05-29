@@ -23,12 +23,16 @@ for row in ws.iter_rows(min_row=2, values_only=False):
     other_names = row[2].value
     website_display = row[3].value
     website_link = row[3].hyperlink.target if row[3].hyperlink else ""
+    print(f"Author Website: {row[3].hyoerlink}")
     goodreads_display = row[4].value
     goodreads_link = row[4].hyperlink.target if row[4].hyperlink else ""
+    print(f"Goodreads Page: {row[4].hyperlink}")
     amazon_display = row[5].value
     amazon_link = row[5].hyperlink.target if row[5].hyperlink else ""
+    print(f"Amazon Page: {row[5].hyperlink}")
     audible_display = row[6].value
     audible_link = row[6].hyperlink.target if row[6].hyperlink else ""
+    print(f"Audible Page: {row[6].hyperlink}")
     data.append({
         "Author Name": author,
         "Role": role,
@@ -159,13 +163,10 @@ for person in full_data["Author"].dropna().unique():
     person_data = full_data[full_data["Author"].str.lower() == person.lower()]
     role =  person_data["Role"].iloc[0] if "Role" in person_data else "Author"
     author_row = author_df[author_df["Author Name"] == person].iloc[0]
-    print(f"Raw website link: {author_df['Website'].iloc[0] if not author_df.empty else 'N/A'}")
-    print('Sanited website link:', clean_url(author_df['Website'].iloc[0]) if not author_df.empty else 'N/A')
     website_url = clean_url(author_row.get("Website"))
     goodreads_url = clean_url(author_row.get("Goodreads Page"))
     amazon_url = clean_url(author_row.get("Amazon Page"))
     audible_url = clean_url(author_row.get("Audible Page"))
-    # print(f"Linking {person} ({role}) with URLs: Website={website_url}, Goodreads={goodreads_url}, Amazon={amazon_url}, Audible={audible_url}")
     # Create a new sheet for each author
     tab_name = sanitize_sheet_name(person)
     row_num = dashboard.max_row + 1
