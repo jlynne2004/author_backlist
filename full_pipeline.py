@@ -178,7 +178,7 @@ for person in full_data["Author"].dropna().unique():
     row_num = dashboard.max_row + 1
     dashboard.cell(row=row_num, column=1).value = person
     dashboard.cell(row=row_num, column=2).value = role
-    dashboard.cell(row=row_num, column=3).value = f'=HYPERLINK("#{tab_name}!A1", "Go To Tab")'
+    dashboard.cell(row=row_num, column=3).value = f'=HYPERLINK("#{quote_sheetname(tab_name)}!A1", "Go To Tab")'
     ws = wb.create_sheet(tab_name)
 
     ws.merge_cells('A1:B1')
