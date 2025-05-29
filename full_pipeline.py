@@ -23,7 +23,7 @@ for row in ws.iter_rows(min_row=2, values_only=False):
     other_names = row[2].value
     website_display = row[3].value
     website_link = row[3].hyperlink.target if row[3].hyperlink else ""
-    print(f"Author Website: {row[3].hyoerlink}")
+    print(f"Author Website: {row[3].hyperlink}")
     goodreads_display = row[4].value
     goodreads_link = row[4].hyperlink.target if row[4].hyperlink else ""
     print(f"Goodreads Page: {row[4].hyperlink}")
