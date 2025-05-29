@@ -159,11 +159,13 @@ for person in full_data["Author"].dropna().unique():
     person_data = full_data[full_data["Author"].str.lower() == person.lower()]
     role =  person_data["Role"].iloc[0] if "Role" in person_data else "Author"
     author_row = author_df[author_df["Author Name"] == person].iloc[0]
+    print(f"Raw website link: {author_df['Website'].iloc[0] if not author_df.empty else 'N/A'}")
+    print('Sanited website link:', clean_url(author_df['Website'].iloc[0]) if not author_df.empty else 'N/A')
     website_url = clean_url(author_row.get("Website"))
     goodreads_url = clean_url(author_row.get("Goodreads Page"))
     amazon_url = clean_url(author_row.get("Amazon Page"))
     audible_url = clean_url(author_row.get("Audible Page"))
-    print(f"Linking {person} ({role}) with URLs: Website={website_url}, Goodreads={goodreads_url}, Amazon={amazon_url}, Audible={audible_url}")
+    # print(f"Linking {person} ({role}) with URLs: Website={website_url}, Goodreads={goodreads_url}, Amazon={amazon_url}, Audible={audible_url}")
     # Create a new sheet for each author
     tab_name = sanitize_sheet_name(person)
     row_num = dashboard.max_row + 1
