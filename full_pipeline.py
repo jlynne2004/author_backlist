@@ -177,6 +177,7 @@ for person in full_data["Author"].dropna().unique():
     audible_url = clean_url(author_row.get("Audible Page",""))
     # Create a new sheet for each author
     tab_name = sanitize_sheet_name(person)
+    # Store dashboard data for later
     dashboard_data.append({
         'name': person, 
         'role': role, 
@@ -193,39 +194,45 @@ for person in full_data["Author"].dropna().unique():
     for row in range(1, 6):
         ws[f'A{row}'].border = thin_border
         ws[f'B{row}'].border = thin_border
-    ws["A2"] = "🌐 Website"
+
+    # Only show labels and links if URLs exist
     if website_url and  website_url != "https://":
+        ws["A2"] = "🌐 Website"
         ws["B2"].value = author_row.get("Website Display", "Author Website")
         ws["B2"].hyperlink = website_url
         ws["B2"].style = "Hyperlink"
     else:
+        ws["A2"].value = "🌐 Website"
         ws["B2"].value = ""
         print(f"⚠️  No website found for {person}")
 
-    ws["A3"] = "📚 Goodreads"
     if goodreads_url and goodreads_url != "https://":
+        ws["A3"] = "📚 Goodreads"
         ws["B3"].value = author_row.get("Goodreads Display", "Goodreads Page")
         ws["B3"].hyperlink = goodreads_url
         ws["B3"].style = "Hyperlink"
     else:
+        ws["A3"] = "📚 Goodreads"
         ws["B3"].value = ""
         print(f"⚠️  No Goodreads page found for {person}")
 
-    ws["A4"] = "🛒 Amazon"
     if amazon_url and amazon_url != "https://":
+        ws["A4"] = "🛒 Amazon"
         ws["B4"].value = author_row.get("Amazon Display", "Amazon Page")
         ws["B4"].hyperlink = amazon_url
         ws["B4"].style = "Hyperlink"
     else:
+        ws["A4"] = "🛒 Amazon"
         ws["B4"].value = ""
         print(f"⚠️  No Amazon page found for {person}")
  
-    ws["A5"] = "🎧 Audible"
     if audible_url and audible_url != "https://":
+        ws["A5"] = "🎧 Audible"
         ws["B5"].value = author_row.get("Audible Display", "Audible Page")
         ws["B5"].hyperlink = audible_url
         ws["B5"].style = "Hyperlink"
     else:
+        ws["A5"] = "🎧 Audible"
         ws["B5"].value = ""
         print(f"⚠️  No Audible page found for {person}")
 
