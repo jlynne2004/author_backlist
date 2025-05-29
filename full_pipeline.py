@@ -160,10 +160,10 @@ for person in full_data["Author"].dropna().unique():
     person_data = full_data[full_data["Author"].str.lower() == person.lower()]
     role =  person_data["Role"].iloc[0] if "Role" in person_data else "Author"
     author_row = author_df[author_df["Author Name"] == person].iloc[0]
-    website_url = clean_url(website_link)
-    goodreads_url = clean_url(goodreads_link)
-    amazon_url = clean_url(amazon_link)
-    audible_url = clean_url(audible_link)
+    website_url = clean_url(author_row.get("Website"))
+    goodreads_url = clean_url(author_row.get("Goodreads Page"))
+    amazon_url = clean_url(author_row.get("Amazon Page"))
+    audible_url = clean_url(author_row.get("Audible Page"))
     # Create a new sheet for each author
     tab_name = sanitize_sheet_name(person)
     row_num = dashboard.max_row + 1
