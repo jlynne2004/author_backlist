@@ -537,6 +537,7 @@ def create_html_dashboard():
                                 <thead>
                                     <tr>
                                         <th>Book Title</th>
+                                        <th>Standalone/Series</th>
                                         <th>Series</th>
                                         <th>Order</th>
                                         <th>Published</th>
@@ -548,7 +549,6 @@ def create_html_dashboard():
                                         <th>KU</th>
                                         <th>Kobo+</th>
                                         <th>Genre</th>
-                                        <th>Type</th>
                                         <th>Notes</th>
                                         <th>Pen Name</th>
                                     </tr>
@@ -563,6 +563,56 @@ def create_html_dashboard():
                         return ""
                     return escape(str(field_value).strip())
                 
+                def parse_series_from_title(title_text):
+                    """
+                    Parse series info from book title patterns like:
+                    - "Book Title (Series Name, #1)"
+                    - "Book Title (Series Name #1)" 
+                    - "Book Title (Series Name Book 1)"
+                    Returns: (clean_title, series_name, series_order)
+                    """
+                    if not title_text or pd.isna(title_text):
+                        return "", "", ""
+                    
+                    title = str(title_text).strip()
+                    
+                    # Look for series info in parentheses at the end
+                    import re
+                    
+                    # Pattern 1: (Series Name, #1) or (Series Name, Book 1)
+                    pattern1 = r'^(.*?)\s*\(\s*([^,]+),\s*(?:#|Book\s*)(\d+)\s*\)'
+                    match1 = re.match(pattern1, title, re.IGNORECASE)
+                    if match1:
+                        clean_title = match1.group(1).strip()
+                        series_name = match1.group(2).strip()
+                        series_order = match1.group(3).strip()
+                        return clean_title, series_name, series_order
+                    
+                    #Pattern 2: (Series Name #1) or (Series Name Book 1)
+                    pattern2 = r'^(.*?)\s*\(\s*([^,]+)\s*(?:#|Book\s*)(\d+)\s*\)'
+                    match2 = re.match(pattern2, title, re.IGNORECASE)
+                    if match2:
+                        clean_title = match2.group(1).strip()
+                        series_name = match2.group(2).strip()
+                        series_order = match2.group(3).strip()
+                        return clean_title, series_name, series_order
+                    
+                    # Pattern 3: (Series Name) - assume book 1 or standalone
+                    pattern3 = r'^(.*?)\s*\(\s*([^)]+)\s*\)'
+                    match3 = re.match(pattern3, title, re.IGNORECASE)
+                    if match3:
+                        clean_title = match3.group(1).strip()
+                        series_name = match3.group(2).strip()
+                        # Only treat as series if it contains certain keywords
+                        if any(keyword in series_name.lower() for keyword in ['series', 'saga', 'chronicles', 'trilogy', 'duology']):
+                            return clean_title, series_name, "1"
+                        else:
+                            # Might be series name, but we're not sure of order
+                            return clean_title, series_name, ""
+                    
+                    # No series info found in title, return as standalone
+                    return title, "", ""
+                
                 def format_yes_no(field_value):
                     clean_val = clean_field(field_value).lower()
                     if clean_val in ['yes', 'y', 'true', '1']:
@@ -573,7 +623,7 @@ def create_html_dashboard():
                         return f'<span class="yes-no-cell">{escape(str(field_value))}</span>'
                     else:
                         return '<span class="yes-no-cell">-</span>'
-                
+                    
                 def format_links(links_text):
                     if not links_text or pd.isna(links_text) or str(links_text).strip() in ['', 'nan']:
                         return '-'
@@ -602,11 +652,29 @@ def create_html_dashboard():
                     else:
                         return f'<div class="link-cell">{escape(links_str)}</div>'
                 
-                # Extract all fields
-                title = clean_field(book.get("Book Title", ""))
-                series = clean_field(book.get("Series Title", ""))
-                series_order = clean_field(book.get("Series Order", ""))
-                published_date = clean_field(book.get("Published Date", ""))
+                # Parse book title for series info
+                raw_title = book.get("Book Title", "")
+                clean_title, parsed_series, parsed_order = parse_series_from_title(raw_title)
+                
+                # Use parsed data or fall back to existing data
+                title = escape(clean_title) if clean_title else clean_field(raw_title)
+                
+                # For series, prefer existing data, then parsed data
+                existing_series = clean_field(book.get("Series Title", ""))
+                series = existing_series if existing_series else parsed_series
+                
+                # For order, prefer existing data, then parsed data  
+                existing_order = clean_field(book.get("Series Order", ""))
+                series_order = existing_order if existing_order else parsed_order
+                
+                # Try multiple date field names
+                published_date = ""
+                for date_field in ["Published Date", "Release Date", "Publication Date", "Date Published"]:
+                    if book.get(date_field):
+                        published_date = clean_field(book.get(date_field))
+                        break
+                
+                # Other fields
                 formats = clean_field(book.get("Formats Available", ""))
                 buy_links = format_links(book.get("Buy Links", ""))
                 rent_links = format_links(book.get("Rent Links", ""))
@@ -626,6 +694,7 @@ def create_html_dashboard():
                 html_content += f"""
                     <tr>
                         <td class="book-title-cell">{title or "-"}</td>
+                        <td>{standalone_series or "-"}</td>
                         <td class="series-cell">{series or "-"}</td>
                         <td>{series_order or "-"}</td>
                         <td>{published_date or "-"}</td>
@@ -637,7 +706,6 @@ def create_html_dashboard():
                         <td>{kindle_unlimited}</td>
                         <td>{kobo_plus}</td>
                         <td>{genre or "-"}</td>
-                        <td>{standalone_series or "-"}</td>
                         <td>{notes or "-"}</td>
                         <td>{pen_name or "-"}</td>
                     </tr>
