@@ -70,21 +70,36 @@ def scrape_goodreads_books(author_url, name, role, pen_name):
                 # Look for publication date within THIS specific book container
                 date_elements = book.select('.greyText')
                 
-                for elem in date_elements:
-                    if elem == series_tag:  # Skip the series tag we already processed
-                        continue
-                        
+                for i, elem in enumerate(date_elements):
                     text = elem.get_text().strip()
-                    print(f"  Checking date text: '{text}'")  # Debug output
+                    print(f"  Checking date element {i+1}: '{text[:100]}...'")  # Debug output (truncated)
                     
-                    # Pattern for "published Month Day, Year"
-                    date_pattern1 = r'published\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})'
-                    match1 = re.search(date_pattern1, text, re.IGNORECASE)
-                    if match1:
-                        published_date = match1.group(1)
-                        print(f"  ✅ Found date (pattern 1): {published_date}")
-                        break
+                    # Skip if this is clearly not a publication date element
+                    if 'rate this book' in text.lower() or 'editions' in text.lower():
+                        print(f"    Skipping non-date element")
+                        continue
                     
+                    # Look for the word "published" in the text
+                    if 'published' in text.lower():
+                        print(f"    Found 'published' in text, parsing...")
+                        
+                        # Pattern for "published Month Day, Year"
+                        date_pattern1 = r'published\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})'
+                        match1 = re.search(date_pattern1, text, re.IGNORECASE)
+                        if match1:
+                            published_date = match1.group(1)
+                            print(f"  ✅ Found date (pattern 1): {published_date}")
+                            break
+                        
+                        # Pattern for "published Year" (like "published 2021")
+                        date_pattern_year = r'published\s+(\d{4})'
+                        match_year = re.search(date_pattern_year, text, re.IGNORECASE)
+                        if match_year:
+                            published_date = match_year.group(1)
+                            print(f"  ✅ Found year (published pattern): {published_date}")
+                            break
+                    
+                    # Also try general date patterns
                     # Pattern for just "Month Day, Year"
                     date_pattern2 = r'\b([A-Za-z]+\s+\d{1,2},\s+\d{4})\b'
                     match2 = re.search(date_pattern2, text)
@@ -93,30 +108,16 @@ def scrape_goodreads_books(author_url, name, role, pen_name):
                         print(f"  ✅ Found date (pattern 2): {published_date}")
                         break
                     
-                    # Pattern for "Month Year" (less specific)
-                    date_pattern3 = r'\b([A-Za-z]+\s+\d{4})\b'
+                    # Pattern for just a year (4 digits)
+                    date_pattern3 = r'\b(\d{4})\b'
                     match3 = re.search(date_pattern3, text)
                     if match3:
-                        published_date = match3.group(1)
-                        print(f"  ✅ Found date (pattern 3): {published_date}")
-                        break
-                
-                # If still no date, check all text in the book container
-                if not published_date:
-                    all_book_text = book.get_text()
-                    
-                    # Try the patterns on all text
-                    date_pattern1 = r'published\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})'
-                    match1 = re.search(date_pattern1, all_book_text, re.IGNORECASE)
-                    if match1:
-                        published_date = match1.group(1)
-                        print(f"  ✅ Found date in full text: {published_date}")
-                    else:
-                        date_pattern2 = r'\b([A-Za-z]+\s+\d{1,2},\s+\d{4})\b'
-                        match2 = re.search(date_pattern2, all_book_text)
-                        if match2:
-                            published_date = match2.group(1)
-                            print(f"  ✅ Found date in full text (pattern 2): {published_date}")
+                        year = match3.group(1)
+                        # Make sure it's a reasonable publication year
+                        if 1900 <= int(year) <= 2030:
+                            published_date = year
+                            print(f"  ✅ Found year: {published_date}")
+                            break
                 
             except Exception as e:
                 print(f"  ❌ Error extracting date for '{title}': {e}")
@@ -218,7 +219,6 @@ if __name__ == "__main__":
     test_single_author("Tessa Bailey")
     
     # Uncomment below for full scraping
-    """
     authors = [
         "Tessa Bailey",
         "Kennedy Ryan", 
@@ -242,4 +242,3 @@ if __name__ == "__main__":
     df.to_excel("author_backlists_scraped.xlsx", index=False)
 
     print("Scraping completed! Data saved to author_backlists_scraped.xlsx")
-    """
