@@ -226,9 +226,9 @@ def test_single_author(author_name):
 
 # Main Runner
 if __name__ == "__main__":
-   author_df = pd.read_excel("announced_authors.xlsx", engine='openpyxl')
+    author_df = pd.read_excel("announced_authors.xlsx", engine='openpyxl')
    
-   all_books = []
+    all_books = []
 
     for idx, row in author_df.iterrows():
         author_name = row["Author Name"]
