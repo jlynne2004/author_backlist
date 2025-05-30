@@ -74,12 +74,13 @@ def scrape_goodreads_books(author_url, name, role, pen_name):
                     text = elem.get_text().strip()
                     print(f"  Checking date element {i+1}: '{text[:100]}...'")  # Debug output (truncated)
                     
-                    # Skip if this is clearly not a publication date element
-                    if 'rate this book' in text.lower() or 'editions' in text.lower():
+                    # Skip if this is clearly ONLY a rating element or ONLY editions
+                    if ('rate this book' in text.lower() and 'published' not in text.lower()) or \
+                       (text.lower().strip().endswith('editions') and 'published' not in text.lower()):
                         print(f"    Skipping non-date element")
                         continue
                     
-                    # Look for the word "published" in the text
+                    # Look for the word "published" in the text - this is our main indicator
                     if 'published' in text.lower():
                         print(f"    Found 'published' in text, parsing...")
                         
@@ -98,26 +99,36 @@ def scrape_goodreads_books(author_url, name, role, pen_name):
                             published_date = match_year.group(1)
                             print(f"  ✅ Found year (published pattern): {published_date}")
                             break
-                    
-                    # Also try general date patterns
-                    # Pattern for just "Month Day, Year"
-                    date_pattern2 = r'\b([A-Za-z]+\s+\d{1,2},\s+\d{4})\b'
-                    match2 = re.search(date_pattern2, text)
-                    if match2:
-                        published_date = match2.group(1)
-                        print(f"  ✅ Found date (pattern 2): {published_date}")
-                        break
-                    
-                    # Pattern for just a year (4 digits)
-                    date_pattern3 = r'\b(\d{4})\b'
-                    match3 = re.search(date_pattern3, text)
-                    if match3:
-                        year = match3.group(1)
-                        # Make sure it's a reasonable publication year
-                        if 1900 <= int(year) <= 2030:
-                            published_date = year
-                            print(f"  ✅ Found year: {published_date}")
+                        
+                        # Pattern for "published Month Year" (like "published March 2021")
+                        date_pattern_month_year = r'published\s+([A-Za-z]+\s+\d{4})'
+                        match_month_year = re.search(date_pattern_month_year, text, re.IGNORECASE)
+                        if match_month_year:
+                            published_date = match_month_year.group(1)
+                            print(f"  ✅ Found month/year (published pattern): {published_date}")
                             break
+                    
+                    # If no "published" found, try general date patterns (but be more careful)
+                    else:
+                        # Pattern for just "Month Day, Year"
+                        date_pattern2 = r'\b([A-Za-z]+\s+\d{1,2},\s+\d{4})\b'
+                        match2 = re.search(date_pattern2, text)
+                        if match2:
+                            published_date = match2.group(1)
+                            print(f"  ✅ Found date (pattern 2): {published_date}")
+                            break
+                        
+                        # Pattern for just a year (4 digits) - only if not in ratings context
+                        if 'avg rating' not in text.lower():
+                            date_pattern3 = r'\b(\d{4})\b'
+                            match3 = re.search(date_pattern3, text)
+                            if match3:
+                                year = match3.group(1)
+                                # Make sure it's a reasonable publication year
+                                if 1900 <= int(year) <= 2030:
+                                    published_date = year
+                                    print(f"  ✅ Found year: {published_date}")
+                                    break
                 
             except Exception as e:
                 print(f"  ❌ Error extracting date for '{title}': {e}")
@@ -219,6 +230,7 @@ if __name__ == "__main__":
     test_single_author("Tessa Bailey")
     
     # Uncomment below for full scraping
+    """
     authors = [
         "Tessa Bailey",
         "Kennedy Ryan", 
@@ -242,3 +254,4 @@ if __name__ == "__main__":
     df.to_excel("author_backlists_scraped.xlsx", index=False)
 
     print("Scraping completed! Data saved to author_backlists_scraped.xlsx")
+    """
