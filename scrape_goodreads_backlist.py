@@ -226,32 +226,41 @@ def test_single_author(author_name):
 
 # Main Runner
 if __name__ == "__main__":
-    # Test with a single author first
-    test_single_author("Tessa Bailey")
-    
-    # Uncomment below for full scraping
-    """
-    authors = [
-        "Tessa Bailey",
-        "Kennedy Ryan", 
-        "Lucy Score"
-    ]
+   author_df = pd.read_excel("announced_authors.xlsx", engine='openpyxl')
+   
+   all_books = []
 
-    all_books = []
-
-    for author in authors:
-        print(f"Scraping {author}...")
-        author_url = search_goodreads_author(author)
+    for idx, row in author_df.iterrows():
+        author_name = row["Author Name"]
+        role = row.get("Role", "Author")
+        other_names = row.get("Other Names", "")
+        
+        if pd.isna(author_name):
+            continue
+            
+        print(f"\n🔍 Scraping {author_name} ({role})...")
+        
+        # Scrape main name
+        author_url = search_goodreads_author(author_name)
         if author_url:
-            books = scrape_goodreads_books(author_url, author, "Author", author)
+            books = scrape_goodreads_books(author_url, author_name, role, author_name)
             all_books.extend(books)
-        time.sleep(2)  # Sleep between authors to be polite
+            time.sleep(2)  # Be polite to Goodreads
+        
+        # Scrape pen names if they exist
+        if not pd.isna(other_names) and str(other_names).strip():
+            pen_names = [name.strip() for name in str(other_names).split(",") if name.strip()]
+            for pen_name in pen_names:
+                print(f"  🖋️  Also scraping pen name: {pen_name}")
+                pen_url = search_goodreads_author(pen_name)
+                if pen_url:
+                    pen_books = scrape_goodreads_books(pen_url, author_name, role, pen_name)
+                    all_books.extend(pen_books)
+                    time.sleep(2)
 
-    # Create DataFrame
+    # Create DataFrame and save
     df = pd.DataFrame(all_books)
-
-    # Save to xlsx
     df.to_excel("author_backlists_scraped.xlsx", index=False)
-
-    print("Scraping completed! Data saved to author_backlists_scraped.xlsx")
-    """
+    
+    print(f"\n🎉 Scraping completed! Found {len(all_books)} total books")
+    print("Data saved to author_backlists_scraped.xlsx")
