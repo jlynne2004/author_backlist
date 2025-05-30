@@ -680,7 +680,7 @@ def create_html_dashboard():
                 for date_field in possible_date_fields:
                     if book.get(date_field):
                         date_value = clean_field(book.get(date_field))
-                        if date_value
+                        if date_value:
                             published_date = date_value
                             date_debug_info.append(f"Found date in {date_field}: {date_value}")
                             break
