@@ -666,13 +666,44 @@ def create_html_dashboard():
                 # For order, prefer existing data, then parsed data  
                 existing_order = clean_field(book.get("Series Order", ""))
                 series_order = existing_order if existing_order else parsed_order
-                
-                # Try multiple date field names
+
+                # Try multiple date field names and debug what we find
                 published_date = ""
-                for date_field in ["Published Date", "Release Date", "Publication Date", "Date Published"]:
+                date_debug_info = []
+                
+                # Check all possible date field variations
+                possible_date_fields = [
+                    "Published Date", "Release Date", "Publication Date", "Date Published",
+                    "Published", "Release", "Publication", "Date", "Pub Date", "Publish Date"
+                ]
+
+                for date_field in possible_date_fields:
                     if book.get(date_field):
-                        published_date = clean_field(book.get(date_field))
-                        break
+                        date_value = clean_field(book.get(date_field))
+                        if date_value
+                            published_date = date_value
+                            date_debug_info.append(f"Found date in {date_field}: {date_value}")
+                            break
+                        else:
+                            date_debug_info.append(f"{date_field} exists but is empty")
+
+                # If still no date found, let's see what fields ARE available
+                if not published_date:
+                    available_fields = [key for key in book.keys() if 'date' in key.lower() or 'publish' in key.lower() or 'release' in key.lower()]
+                    if available_fields:
+                        date_debug_info.append(f"Available date-related fields: {available_fields}")
+                        # Try the first available date-related field
+                        for field in available_fields:
+                            if book.get(field):
+                                date_value = clean_field(book.get(field))
+                                if date_value:
+                                    published_date = date_value
+                                    date_debug_info.append(f"Using '{field}': {date_value}")
+                                    break
+                
+                # Print debug info for first few books
+                if len(date_debug_info) > 0:
+                    print(f"Date debug for '{title}': {'; '.join(date_debug_info)}")
                 
                 # Other fields
                 formats = clean_field(book.get("Formats Available", ""))
