@@ -540,7 +540,7 @@ def create_html_dashboard():
                                         <th>Standalone/Series</th>
                                         <th>Series</th>
                                         <th>Order</th>
-                                        <th>Published</th>
+                                        <th>Published Year</th>
                                         <th>Formats</th>
                                         <th>Buy Links</th>
                                         <th>Rent Links</th>
@@ -679,11 +679,29 @@ def create_html_dashboard():
 
                 for date_field in possible_date_fields:
                     if book.get(date_field):
-                        date_value = clean_field(book.get(date_field))
-                        if date_value:
-                            published_date = date_value
-                            date_debug_info.append(f"Found date in {date_field}: {date_value}")
-                            break
+                        raw_date_value = book.get(date_field)
+                        # Handle float years (like 2023.0) and convert to clean integers
+                        if isinstance(raw_date_value, (int, float)):
+                            year = int(raw_date_value)
+                            if 1900 <= year <= 2100:  # reasonable year range
+                                published_date = str(year)
+                                date_debug_info.append(f"Found numeric year in {date_field}: {published_date}")
+                                break
+                            else:
+                                date_value = clean_field(book.get(date_field))
+                                if date_value:
+                                    # Try to extract just the year from string dates
+                                    year_match = re.search(r'\b(\d{4})\b', date_value)
+                                    if year_match:
+                                        year = int(year_match.group(1))
+                                        if 1900 <= year <= 2100:  # reasonable year range
+                                            published_date = date_value
+                                            date_debug_info.append(f"Found date in {date_field}: {date_value}")
+                                            break
+                                    else:
+                                        published_date = date_value
+                                        date_debug_info.append(f"Using string from {date_field}: {date_value}")
+                                        break
                         else:
                             date_debug_info.append(f"{date_field} exists but is empty")
 
@@ -694,12 +712,20 @@ def create_html_dashboard():
                         date_debug_info.append(f"Available date-related fields: {available_fields}")
                         # Try the first available date-related field
                         for field in available_fields:
-                            if book.get(field):
-                                date_value = clean_field(book.get(field))
-                                if date_value:
-                                    published_date = date_value
-                                    date_debug_info.append(f"Using '{field}': {date_value}")
-                                    break
+                            raw_value = book.get(field)
+                            if raw_value:
+                                if isinstance(raw_value, (int, float)):
+                                    year = int(raw_value)
+                                    if 1900 <= year <= 2100:  # reasonable year range
+                                        published_date = str(year)
+                                        date_debug_info.append(f"Using numeric value from '{field}': {published_date}")
+                                        break
+                                else:
+                                    date_value = clean_field(raw_value)
+                                    if date_value:
+                                        published_date = date_value
+                                        date_debug_info.append(f"Using string from '{field}': {published_date}")
+                                        break
                 
                 # Print debug info for first few books
                 if len(date_debug_info) > 0:
