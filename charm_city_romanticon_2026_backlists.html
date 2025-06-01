@@ -66,6 +66,11 @@
             text-align: center;
             background: #f8f9fa;
             border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
         }
         
         .search-input {
@@ -81,6 +86,28 @@
         
         .search-input:focus {
             border-color: #EC008C;
+        }
+        
+        .export-btn {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .export-btn:hover {
+            background: linear-gradient(45deg, #218838, #1ea085);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
         }
         
         .authors-grid {
@@ -350,6 +377,9 @@
         
         <div class="search-bar">
             <input type="text" class="search-input" placeholder="Search authors..." onkeyup="searchAuthors()">
+            <button class="export-btn" onclick="exportToCSV()">
+                📊 Export to Excel/Sheets
+            </button>
         </div>
         
         <div class="stats" id="stats">
@@ -378,8 +408,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -597,8 +627,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -816,8 +846,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -1215,8 +1245,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -1614,8 +1644,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -1833,8 +1863,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -2052,8 +2082,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -2451,8 +2481,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -2544,8 +2574,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -2763,8 +2793,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -2982,8 +3012,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -3201,8 +3231,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -3420,8 +3450,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -3639,8 +3669,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -3858,8 +3888,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -4077,8 +4107,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -4656,8 +4686,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -4875,8 +4905,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -5274,8 +5304,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -5601,8 +5631,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -6126,8 +6156,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -6345,8 +6375,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -6564,8 +6594,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -6783,8 +6813,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -7002,8 +7032,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -7221,8 +7251,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -7440,8 +7470,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -7551,8 +7581,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -7770,8 +7800,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -8043,8 +8073,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -8262,8 +8292,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -8481,8 +8511,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -8700,8 +8730,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -8865,8 +8895,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -8940,8 +8970,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -9159,8 +9189,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -9378,8 +9408,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -9597,8 +9627,8 @@
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -9835,6 +9865,111 @@
                 document.getElementById('stats').innerHTML = `🔍 Showing ${visibleCount} results for "${searchTerm}"`;
             } else {
                 document.getElementById('stats').innerHTML = `📊 38 Authors & Narrators • 442 Books`;
+            }
+        }
+
+        function exportToCSV() {
+            const csvData = [];
+            
+            // Add header row
+            csvData.push([
+                'Author Name',
+                'Role', 
+                'Book Title',
+                'Standalone/Series',
+                'Series',
+                'Order',
+                'Published Year',
+                'Formats',
+                'Buy Platforms',
+                'Library Platforms', 
+                'Audio',
+                'Narrators',
+                'Kindle Unlimited',
+                'Kobo+',
+                'Genre',
+                'Notes',
+                'Pen Name'
+            ]);
+            
+            // Get all author cards
+            const authorCards = document.querySelectorAll('.author-card');
+            
+            authorCards.forEach(card => {
+                const authorName = card.querySelector('.author-name').textContent;
+                const authorRole = card.querySelector('.author-role').textContent;
+                
+                // Get the books table for this author
+                const booksTable = card.querySelector('.books-table tbody');
+                
+                if (booksTable) {
+                    const rows = booksTable.querySelectorAll('tr');
+                    
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length > 0) {
+                            const rowData = [
+                                authorName,
+                                authorRole,
+                                cells[0]?.textContent?.trim() || '', // Book Title
+                                cells[1]?.textContent?.trim() || '', // Standalone/Series
+                                cells[2]?.textContent?.trim() || '', // Series
+                                cells[3]?.textContent?.trim() || '', // Order
+                                cells[4]?.textContent?.trim() || '', // Published Year
+                                cells[5]?.textContent?.trim() || '', // Formats
+                                cells[6]?.textContent?.trim() || '', // Buy Platforms
+                                cells[7]?.textContent?.trim() || '', // Library Platforms
+                                cells[8]?.textContent?.trim() || '', // Audio
+                                cells[9]?.textContent?.trim() || '', // Narrators
+                                cells[10]?.textContent?.trim() || '', // KU
+                                cells[11]?.textContent?.trim() || '', // Kobo+
+                                cells[12]?.textContent?.trim() || '', // Genre
+                                cells[13]?.textContent?.trim() || '', // Notes
+                                cells[14]?.textContent?.trim() || ''  // Pen Name
+                            ];
+                            csvData.push(rowData);
+                        }
+                    });
+                } else {
+                    // If no books, add just the author info
+                    csvData.push([authorName, authorRole, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+                }
+            });
+            
+            // Convert to CSV format
+            const csvContent = csvData.map(row => 
+                row.map(cell => {
+                    // Escape quotes and wrap in quotes if contains comma, quote, or newline
+                    const escapedCell = String(cell).replace(/"/g, '""');
+                    return escapedCell.includes(',') || escapedCell.includes('"') || escapedCell.includes('\n') 
+                        ? `"${escapedCell}"` 
+                        : escapedCell;
+                }).join(',')
+            ).join('\n');
+            
+            // Create download
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'charm_city_romanticon_2026_backlists.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Show success message
+                const btn = document.querySelector('.export-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Downloaded!';
+                btn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                }, 2000);
             }
         }
         

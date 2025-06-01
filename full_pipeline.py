@@ -646,9 +646,9 @@ def create_html_dashboard():
                 def format_yes_no(field_value):
                     clean_val = clean_field(field_value).lower()
                     if clean_val in ['yes', 'y', 'true', '1']:
-                        return '<span class="yes-no-cell yes-cell">✓ Yes</span>'
+                        return '<span class="yes-no-cell yes-cell">Yes</span>'
                     elif clean_val in ['no', 'n', 'false', '0']:
-                        return '<span class="yes-no-cell no-cell">✗ No</span>'
+                        return '<span class="yes-no-cell no-cell">No</span>'
                     elif clean_val:
                         return f'<span class="yes-no-cell">{escape(str(field_value))}</span>'
                     else:
