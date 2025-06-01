@@ -680,31 +680,41 @@ def create_html_dashboard():
                 for date_field in possible_date_fields:
                     if book.get(date_field):
                         raw_date_value = book.get(date_field)
+                        # Skip if the value is empty or NaN
+                        if pd.isna(raw_date_value) or raw_date_value is None:
+                            date_debug_info.append(f"{date_field} is Nan/None. Skipping...")
+                            continue
                         # Handle float years (like 2023.0) and convert to clean integers
                         if isinstance(raw_date_value, (int, float)):
-                            #year = int(raw_date_value)
-                            if 1900 <= year <= 2100:  # reasonable year range
+                            if pd.isna(raw_date_value):
+                                date_debug_info.append(f"{date_field} is NaN float. Skipping...")
+                                continue
+                            try:
                                 year = int(raw_date_value)
-                                published_date = str(year)
-                                date_debug_info.append(f"Found numeric year in {date_field}: {published_date}")
-                                break
-                            else:
-                                date_value = clean_field(book.get(date_field))
-                                if date_value:
-                                    # Try to extract just the year from string dates
-                                    year_match = re.search(r'\b(\d{4})\b', date_value)
-                                    if year_match:
-                                        year = int(year_match.group(1))
-                                        if 1900 <= year <= 2100:  # reasonable year range
-                                            published_date = date_value
-                                            date_debug_info.append(f"Found date in {date_field}: {date_value}")
-                                            break
-                                    else:
-                                        published_date = date_value
-                                        date_debug_info.append(f"Using string from {date_field}: {date_value}")
-                                        break
+                                if 1900 <= year <= 2100:  # reasonable year range
+                                    published_date = str(year)
+                                    date_debug_info.append(f"Found numeric year in {date_field}: {published_date}")
+                                    break
+                            except (ValueError, OverflowError):
+                                date_debug_info.append(f"Could not convert '{raw_date_value}' to int from '{date_field}'. Skipping...")
+                                continue
                         else:
-                            date_debug_info.append(f"{date_field} exists but is empty")
+                            date_value = clean_field(book.get(date_field))
+                            if date_value:
+                                # Try to extract just the year from string dates
+                                year_match = re.search(r'\b(\d{4})\b', date_value)
+                                if year_match:
+                                    year = int(year_match.group(1))
+                                    if 1900 <= year <= 2100:  # reasonable year range
+                                        published_date = date_value
+                                        date_debug_info.append(f"Found date in {date_field}: {date_value}")
+                                        break
+                                else:
+                                    published_date = date_value
+                                    date_debug_info.append(f"Using string from {date_field}: {date_value}")
+                                    break
+                    else:
+                        date_debug_info.append(f"{date_field} exists but is empty")
 
                 # If still no date found, let's see what fields ARE available
                 if not published_date:
@@ -716,11 +726,14 @@ def create_html_dashboard():
                             raw_value = book.get(field)
                             if raw_value:
                                 if isinstance(raw_value, (int, float)):
-                                    year = int(raw_value)
-                                    if 1900 <= year <= 2100:  # reasonable year range
-                                        published_date = str(year)
-                                        date_debug_info.append(f"Using numeric value from '{field}': {published_date}")
-                                        break
+                                    try:
+                                        year = int(raw_value)
+                                        if 1900 <= year <= 2100:  # reasonable year range
+                                            published_date = str(year)
+                                            date_debug_info.append(f"Using numeric value from '{field}': {published_date}")
+                                            break
+                                    except (ValueError, OverflowError):
+                                        continue
                                 else:
                                     date_value = clean_field(raw_value)
                                     if date_value:
