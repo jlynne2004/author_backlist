@@ -175,6 +175,11 @@ def create_html_dashboard():
             text-align: center;
             background: #f8f9fa;
             border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
         }
         
         .search-input {
@@ -190,6 +195,28 @@ def create_html_dashboard():
         
         .search-input:focus {
             border-color: #EC008C;
+        }
+        
+        .export-btn {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .export-btn:hover {
+            background: linear-gradient(45deg, #218838, #1ea085);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
         }
         
         .authors-grid {
@@ -459,6 +486,9 @@ def create_html_dashboard():
         
         <div class="search-bar">
             <input type="text" class="search-input" placeholder="Search authors..." onkeyup="searchAuthors()">
+            <button class="export-btn" onclick="exportToCSV()">
+                📊 Export to Excel/Sheets
+            </button>
         </div>
         
         <div class="stats" id="stats">
@@ -542,8 +572,8 @@ def create_html_dashboard():
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Links</th>
-                                        <th>Rent Links</th>
+                                        <th>Buy Platforms</th>
+                                        <th>Library Platforms</th>
                                         <th>Audio</th>
                                         <th>Narrators</th>
                                         <th>KU</th>
@@ -624,34 +654,68 @@ def create_html_dashboard():
                     else:
                         return '<span class="yes-no-cell">-</span>'
                     
-                def format_links(links_text):
+                def extract_platforms(links_text, platform_type="buy"):
+                    """Extract platform names from links or text"""
                     if not links_text or pd.isna(links_text) or str(links_text).strip() in ['', 'nan']:
                         return '-'
                     
-                    links_str = str(links_text).strip()
-                    # Check if it looks like URLs
-                    if 'http' in links_str:
-                        # Split by common separators and create clickable links
-                        potential_links = []
-                        for separator in [',', '\n', ';', ' ']:
-                            if separator in links_str:
-                                potential_links = [link.strip() for link in links_str.split(separator) if link.strip()]
-                                break
-                        
-                        if not potential_links:
-                            potential_links = [links_str]
-                        
-                        clickable_links = []
-                        for link in potential_links:
-                            if link.startswith('http'):
-                                clickable_links.append(f'<a href="{link}" target="_blank">Link</a>')
-                            else:
-                                clickable_links.append(escape(link))
-                        
-                        return '<div class="link-cell">' + ' • '.join(clickable_links) + '</div>'
+                    text = str(links_text).lower().strip()
+                    platforms = []
+                    
+                    if platform_type == "buy":
+                        # Buy platform keywords to look for
+                        platform_map = {
+                            'amazon': 'Amazon',
+                            'barnes': 'Barnes & Noble',
+                            'bn.com': 'Barnes & Noble', 
+                            'barnesandnoble': 'Barnes & Noble',
+                            'apple': 'Apple Books',
+                            'ibooks': 'Apple Books',
+                            'kobo': 'Kobo',
+                            'google': 'Google Play',
+                            'googleplay': 'Google Play',
+                            'bookshop': 'Bookshop.org',
+                            'indie': 'IndieBound',
+                            'indiebound': 'IndieBound',
+                            'target': 'Target',
+                            'walmart': 'Walmart',
+                            'book depository': 'Book Depository',
+                            'bookdepository': 'Book Depository'
+                        }
+                    else:  # library/rent platforms
+                        platform_map = {
+                            'hoopla': 'Hoopla',
+                            'libby': 'Libby',
+                            'overdrive': 'OverDrive',
+                            'library': 'Library',
+                            'kanopy': 'Kanopy',
+                            'scribd': 'Scribd',
+                            'kindle unlimited': 'Kindle Unlimited',
+                            'epic': 'Epic!'
+                        }
+                    
+                    # Check for each platform
+                    for keyword, display_name in platform_map.items():
+                        if keyword in text:
+                            if display_name not in platforms:
+                                platforms.append(display_name)
+                    
+                    # If no specific platforms found but text exists, try to extract domain names
+                    if not platforms and 'http' in text:
+                        import re
+                        # Extract domain names
+                        domains = re.findall(r'https?://(?:www\.)?([^/\s]+)', text)
+                        for domain in domains:
+                            # Clean up domain names
+                            clean_domain = domain.split('.')[0].title()
+                            if len(clean_domain) > 2:  # Avoid things like "co" or "com"
+                                platforms.append(clean_domain)
+                    
+                    if platforms:
+                        return ', '.join(platforms[:4])  # Limit to 4 platforms to keep it clean
                     else:
-                        return f'<div class="link-cell">{escape(links_str)}</div>'
-                
+                        return 'Available' if text and text != '-' else '-'
+                    
                 # Parse book title for series info
                 raw_title = book.get("Book Title", "")
                 clean_title, parsed_series, parsed_order = parse_series_from_title(raw_title)
@@ -747,8 +811,8 @@ def create_html_dashboard():
                 
                 # Other fields
                 formats = clean_field(book.get("Formats Available", ""))
-                buy_links = format_links(book.get("Buy Links", ""))
-                rent_links = format_links(book.get("Rent Links", ""))
+                buy_platforms = extract_platforms(book.get("Buy Links", ""), "buy")
+                library_platforms = extract_platforms(book.get("Rent Links", ""), "library")
                 audiobook = format_yes_no(book.get("Audiobook (Y/N)", ""))
                 narrators = clean_field(book.get("Narrators", ""))
                 kindle_unlimited = format_yes_no(book.get("Kindle Unlimited (Y/N)", ""))
@@ -770,8 +834,8 @@ def create_html_dashboard():
                         <td>{series_order or "-"}</td>
                         <td>{published_date or "-"}</td>
                         <td>{formats or "-"}</td>
-                        <td>{buy_links}</td>
-                        <td>{rent_links}</td>
+                        <td>{buy_platforms}</td>
+                        <td>{library_platforms}</td>
                         <td>{audiobook}</td>
                         <td>{narrators or "-"}</td>
                         <td>{kindle_unlimited}</td>
@@ -832,6 +896,111 @@ def create_html_dashboard():
                 document.getElementById('stats').innerHTML = `🔍 Showing ${{visibleCount}} results for "${{searchTerm}}"`;
             }} else {{
                 document.getElementById('stats').innerHTML = `📊 {total_authors} Authors & Narrators • {total_books} Books`;
+            }}
+        }}
+
+        function exportToCSV() {{
+            const csvData = [];
+            
+            // Add header row
+            csvData.push([
+                'Author Name',
+                'Role', 
+                'Book Title',
+                'Standalone/Series',
+                'Series',
+                'Order',
+                'Published Year',
+                'Formats',
+                'Buy Platforms',
+                'Library Platforms', 
+                'Audio',
+                'Narrators',
+                'Kindle Unlimited',
+                'Kobo+',
+                'Genre',
+                'Notes',
+                'Pen Name'
+            ]);
+            
+            // Get all author cards
+            const authorCards = document.querySelectorAll('.author-card');
+            
+            authorCards.forEach(card => {{
+                const authorName = card.querySelector('.author-name').textContent;
+                const authorRole = card.querySelector('.author-role').textContent;
+                
+                // Get the books table for this author
+                const booksTable = card.querySelector('.books-table tbody');
+                
+                if (booksTable) {{
+                    const rows = booksTable.querySelectorAll('tr');
+                    
+                    rows.forEach(row => {{
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length > 0) {{
+                            const rowData = [
+                                authorName,
+                                authorRole,
+                                cells[0]?.textContent?.trim() || '', // Book Title
+                                cells[1]?.textContent?.trim() || '', // Standalone/Series
+                                cells[2]?.textContent?.trim() || '', // Series
+                                cells[3]?.textContent?.trim() || '', // Order
+                                cells[4]?.textContent?.trim() || '', // Published Year
+                                cells[5]?.textContent?.trim() || '', // Formats
+                                cells[6]?.textContent?.trim() || '', // Buy Platforms
+                                cells[7]?.textContent?.trim() || '', // Library Platforms
+                                cells[8]?.textContent?.trim() || '', // Audio
+                                cells[9]?.textContent?.trim() || '', // Narrators
+                                cells[10]?.textContent?.trim() || '', // KU
+                                cells[11]?.textContent?.trim() || '', // Kobo+
+                                cells[12]?.textContent?.trim() || '', // Genre
+                                cells[13]?.textContent?.trim() || '', // Notes
+                                cells[14]?.textContent?.trim() || ''  // Pen Name
+                            ];
+                            csvData.push(rowData);
+                        }}
+                    }});
+                }} else {{
+                    // If no books, add just the author info
+                    csvData.push([authorName, authorRole, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+                }}
+            }});
+            
+            // Convert to CSV format
+            const csvContent = csvData.map(row => 
+                row.map(cell => {{
+                    // Escape quotes and wrap in quotes if contains comma, quote, or newline
+                    const escapedCell = String(cell).replace(/"/g, '""');
+                    return escapedCell.includes(',') || escapedCell.includes('"') || escapedCell.includes('\\n') 
+                        ? `"${{escapedCell}}"` 
+                        : escapedCell;
+                }}).join(',')
+            ).join('\\n');
+            
+            // Create download
+            const blob = new Blob([csvContent], {{ type: 'text/csv;charset=utf-8;' }});
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {{
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'charm_city_romanticon_2026_backlists.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Show success message
+                const btn = document.querySelector('.export-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Downloaded!';
+                btn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                
+                setTimeout(() => {{
+                    btn.innerHTML = originalText;
+                    btn.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+                }}, 2000);
             }}
         }}
         
