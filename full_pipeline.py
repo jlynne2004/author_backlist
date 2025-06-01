@@ -682,8 +682,9 @@ def create_html_dashboard():
                         raw_date_value = book.get(date_field)
                         # Handle float years (like 2023.0) and convert to clean integers
                         if isinstance(raw_date_value, (int, float)):
-                            year = int(raw_date_value)
+                            #year = int(raw_date_value)
                             if 1900 <= year <= 2100:  # reasonable year range
+                                year = int(raw_date_value)
                                 published_date = str(year)
                                 date_debug_info.append(f"Found numeric year in {date_field}: {published_date}")
                                 break
