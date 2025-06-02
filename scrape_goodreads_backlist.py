@@ -137,61 +137,7 @@ def scrape_goodreads_books(author_url, name, role, pen_name):
             if not published_date:
                 print(f"  ⚠️  No date found for '{title}'")
 
-            # FORMAT AND AUDIOBOOK DETECTION
-            formats = []
-            has_audiobook = False
-
-            try:
-                # Look for formats in the book container
-                format_elements = book.select('.greyText, .smallText')
-
-                for elem in format_elements:
-                    text = elem.get_text().strip().lower()
-
-                    # Check for audiobook indicators
-                    if any(keyword in text for keyword in ['audiobook', 'audio book', 'narrated by', 'narrator:','audible']):
-                        has_audiobook = True
-                        if "Audiobook" not in formats:
-                            formats.append("Audiobook")
-                            print(f"  ✅ Found audiobook format for '{title}'")
-
-                    # Check for other formats
-                    if any(keyword in text for keyword in ['kindle', 'ebook', 'digital']):
-                        if 'Ebook' not in formats:
-                            formats.append("Ebook")
-                            print(f"  ✅ Found ebook format for '{title}'")
-
-                    if any(keyword in text for keyword in ['paperback', 'softcover']):
-                        if 'Paperback' not in formats:
-                            formats.append("Paperback")
-                            print(f"  ✅ Found paperback format for '{title}'")
-
-                    if any(keyword in text for keyword in ['hardcover', 'hardback']):
-                        if 'Hardcover' not in formats:
-                            formats.append("Hardcover")
-                            print(f"  ✅ Found hardcover format for '{title}'")
-
-                    # If no specific format found, assume basic formats are available
-                    if not formats:
-                        formats = ['Ebook', 'Paperback'] # Conservative assumptions
-
-                    # Look more speficially for audiobook narrator information
-                    if not has_audiobook:
-                        # Check the entire book container text for narrator mentions
-                        full_text = book.get_text().strip().lower()
-                        if any(keyword in full_text for keyword in ['narrated by', 'narrator:', 'read by', 'performed by']):
-                            has_audiobook = True
-                            if "Audiobook" not in formats:
-                                formats.append("Audiobook")
-                                print(f"  ✅ Found audiobook format for '{title}' (narrator mention)")
-
-                    formats_str = ', '.join(formats)
-                    print(f"  Formats for '{title}': {formats_str} (Audio: {'Yes' if has_audiobook else 'No'})")
-
-            except Exception as e:
-                print(f"  ❌ Error detecting formatsfor '{title}': {e}")
-                formats_str = "Ebook, Paperback"  # Default formats if detection fails
-                has_audiobook = False
+            formats = "Ebook, Paperback" # Default formats
 
             book_data = {
                 "Author": name,
@@ -199,194 +145,18 @@ def scrape_goodreads_books(author_url, name, role, pen_name):
                 "Series Title": series_title,
                 "Series Order": series_order,
                 "Published Date": published_date,  # This should now work!
-                "Formats Available": formats_str,  # Use the formats string
-                "Buy Links": "",  # Placeholder for buy links
-                "Rent Links": "",  # Placeholder for rent links
-                "Audiobook (Y/N)": "Y" if has_audiobook else "N",
-                "Narrators": "",  # Placeholder for narrators
-                "Kindle Unlimited (Y/N)": "",  # Placeholder for Kindle Unlimited
-                "Kobo+ (Y/N)": "",  # Placeholder for Kobo+
-                "Genre": "",  # Placeholder for genre
+                "Formats Available": formats,  # Use the defult format
                 "Standalone/Series": "Series" if series_title else "Standalone",
-                "Other Notes": "",  # Placeholder for other notes
                 "Pen Name": pen_name,  # Fixed: was empty, now uses the parameter
                 "Role": role  # Fixed: was "Book Role", now uses correct field name
             }
             
             books.append(book_data)
-            print(f"  📚 Added '{title}' - Audio: {'Yes' if has_audiobook else 'No'}")
+            print(f"  📚 Added '{title}'")
 
     except Exception as e:
         print(f"❌ Error scraping books for {name}: {e}")
 
-    return books
-
-def scrape_audible_audiobooks(audible_url, author_name):
-    """
-    Scrape audiobooks from an Audible author page
-    Returns list of audiobook titles
-    """
-    audiobooks = []
-    
-    try:
-        print(f"  🎧 Scraping Audible page for {author_name}...")
-        print(f"      URL: {audible_url}")
-        
-        # Clean the URL first
-        if not audible_url.startswith('http'):
-            audible_url = 'https://' + audible_url
-        
-        # Use headers to avoid blocking
-        audible_headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.5",
-            "Accept-Encoding": "gzip, deflate",
-            "Connection": "keep-alive",
-        }
-        
-        response = requests.get(audible_url, headers=audible_headers, timeout=10)
-        print(f"      HTTP Status: {response.status_code}")
-        
-        if response.status_code != 200:
-            print(f"      ❌ Failed to load page: {response.status_code}")
-            return audiobooks
-            
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, "html.parser")
-        
-        # Debug: Check what we actually got
-        page_title = soup.select_one('title')
-        if page_title:
-            print(f"      Page title: {page_title.get_text().strip()}")
-        
-        # Look for any text that mentions the author
-        page_text = soup.get_text().lower()
-        if author_name.lower() in page_text:
-            print(f"      ✅ Found author name '{author_name}' on page")
-        else:
-            print(f"      ⚠️  Author name '{author_name}' not found on page")
-        
-        # Debug: Save page content to see what we're working with
-        with open(f"debug_audible_{author_name.replace(' ', '_')}.html", "w", encoding="utf-8") as f:
-            f.write(response.text)
-        print(f"      💾 Saved page content to debug_audible_{author_name.replace(' ', '_')}.html")
-        
-        # Look for audiobook titles - try multiple approaches
-        print(f"      🔍 Looking for audiobook containers...")
-        
-        # Method 1: Look for product links
-        book_links = soup.select('a[href*="/pd/"]')
-        print(f"      Found {len(book_links)} /pd/ links")
-        
-        if book_links:
-            for i, link in enumerate(book_links[:5]):  # Check first 5
-                title_text = link.get_text().strip()
-                print(f"        Link {i+1}: '{title_text[:100]}...'")
-                
-                if title_text and len(title_text) > 5:
-                    audiobooks.append({
-                        'title': title_text,
-                        'narrator': 'Unknown',
-                        'url': audible_url
-                    })
-        
-        # Method 2: Look for specific Audible book containers
-        containers = soup.select('.adbl-search-result, .bc-list-item, .productListItem')
-        print(f"      Found {len(containers)} product containers")
-        
-        # Method 3: Look for heading elements that might be book titles
-        headings = soup.select('h1, h2, h3, h4')
-        book_headings = []
-        for heading in headings:
-            text = heading.get_text().strip()
-            if len(text) > 10 and len(text) < 200:  # Reasonable title length
-                book_headings.append(text)
-        
-        print(f"      Found {len(book_headings)} potential book headings")
-        for i, heading in enumerate(book_headings[:3]):
-            print(f"        Heading {i+1}: '{heading}'")
-        
-        print(f"  📊 Final result: {len(audiobooks)} audiobooks found for {author_name}")
-        
-    except Exception as e:
-        print(f"  ❌ Error scraping Audible for {author_name}: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    return audiobooks
-
-# Update your main scraping function to use Audible data
-def scrape_goodreads_books_with_audible(author_url, name, role, pen_name, author_data=None):
-    """
-    Enhanced version that combines Goodreads books with Audible audiobook data
-    """
-    books = []
-    
-    # First, get the regular book list from Goodreads
-    goodreads_books = scrape_goodreads_books(author_url, name, role, pen_name)
-    
-    # Then, if we have Audible URL, get audiobook data
-    audible_books = []
-    if author_data and author_data.get("Audible Page"):
-        audible_url = author_data.get("Audible Page")
-        if audible_url and str(audible_url).strip() and audible_url != "nan":
-            audible_books = scrape_audible_audiobooks(audible_url, name)
-    
-    # Create a list of audiobook titles for easy matching
-    audiobook_titles = [book['title'].lower() for book in audible_books]
-    
-    # Enhanced matching function
-    def is_audiobook_available(book_title):
-        book_title_clean = book_title.lower().strip()
-        
-        # Direct title match
-        if book_title_clean in audiobook_titles:
-            return True
-        
-        # Fuzzy matching - remove common series info and check
-        import re
-        # Remove series info like "(Series Name, #1)" 
-        clean_title = re.sub(r'\s*\([^)]+\)\s*$', '', book_title_clean)
-        
-        for audio_title in audiobook_titles:
-            audio_clean = re.sub(r'\s*\([^)]+\)\s*$', '', audio_title)
-            
-            # Check if titles match (allowing for minor differences)
-            if clean_title in audio_clean or audio_clean in clean_title:
-                return True
-            
-            # Check if main words match (for slight title variations)
-            book_words = set(clean_title.split())
-            audio_words = set(audio_clean.split())
-            
-            # If 80% of words match, consider it a match
-            if len(book_words) > 0 and len(audio_words) > 0:
-                common_words = book_words.intersection(audio_words)
-                match_ratio = len(common_words) / max(len(book_words), len(audio_words))
-                if match_ratio >= 0.8:
-                    return True
-        
-        return False
-    
-    # Update the Goodreads books with accurate audiobook info
-    for book in goodreads_books:
-        title = book.get("Book Title", "")
-        
-        if is_audiobook_available(title):
-            book["Audiobook (Y/N)"] = "Y"
-            # Add audiobook to formats if not already there
-            formats = book.get("Formats Available", "")
-            if "Audiobook" not in formats:
-                if formats:
-                    book["Formats Available"] = formats + ", Audiobook"
-                else:
-                    book["Formats Available"] = "Audiobook"
-        else:
-            book["Audiobook (Y/N)"] = "N"
-        
-        books.append(book)
-    
     return books
 
 # Alternative debugging approach - add this to see what's actually on the page:

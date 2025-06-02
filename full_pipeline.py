@@ -1,7 +1,7 @@
 # full_pipeline.py (HTML Dashboard Version - No More Excel Drama!)
 
 import os
-from scrape_goodreads_backlist import search_goodreads_author, scrape_goodreads_books, scrape_goodreads_books_with_audible
+from scrape_goodreads_backlist import search_goodreads_author, scrape_goodreads_books
 import pandas as pd
 from openpyxl import load_workbook
 import time
@@ -68,7 +68,7 @@ for idx, row in author_df.iterrows():
 
     names_to_scrape = [name] + pen_names
 
-    # Get the author data for Audible URL
+    # Get the author data for later use
     author_row = None
     for entry in data:
         if entry["Author Name"] == name:
@@ -79,8 +79,7 @@ for idx, row in author_df.iterrows():
         print(f"🔍 Scraping {pen_name} for {name} ({role})...")
         author_url = search_goodreads_author(pen_name)
         if author_url:
-            # Use the enhanced function that includes Audible data
-            books = scrape_goodreads_books_with_audible(author_url, name, role, author_row)
+            books = scrape_goodreads_books(author_url, name, role, pen_name)
             for book in books:
                 book["Author"] = name
                 book["Pen Name"] = pen_name if pen_name != name else ""
@@ -115,6 +114,94 @@ def clean_url(url):
         return "https://" + url
 
 def create_html_dashboard():
+    # All helper functions consolidated here
+    def clean_field(field_value):
+        if pd.isna(field_value) or str(field_value).strip() in ['', 'nan', 'None']:
+            return ""
+        return escape(str(field_value).strip())
+    
+    def parse_series_from_title(title_text):
+        """
+        Parse series info from book title patterns like:
+        - "Book Title (Series Name, #1)"
+        - "Book Title (Series Name #1)" 
+        - "Book Title (Series Name Book 1)"
+        Returns: (clean_title, series_name, series_order)
+        """
+        if not title_text or pd.isna(title_text):
+            return "", "", ""
+        
+        title = str(title_text).strip()
+        
+        # Pattern 1: (Series Name, #1) or (Series Name, Book 1)
+        pattern1 = r'^(.*?)\s*\(\s*([^,]+),\s*(?:#|Book\s*)(\d+)\s*\)'
+        match1 = re.match(pattern1, title, re.IGNORECASE)
+        if match1:
+            clean_title = match1.group(1).strip()
+            series_name = match1.group(2).strip()
+            series_order = match1.group(3).strip()
+            return clean_title, series_name, series_order
+        
+        # Pattern 2: (Series Name #1) or (Series Name Book 1)
+        pattern2 = r'^(.*?)\s*\(\s*([^#]+?)(?:\s*#|Book\s*)(\d+)\s*\)'
+        match2 = re.match(pattern2, title, re.IGNORECASE)
+        if match2:
+            clean_title = match2.group(1).strip()
+            series_name = match2.group(2).strip()
+            series_order = match2.group(3).strip()
+            return clean_title, series_name, series_order
+        
+        # Pattern 3: (Series Name) - assume book 1 or standalone
+        pattern3 = r'^(.*?)\s*\(\s*([^)]+)\s*\)'
+        match3 = re.match(pattern3, title, re.IGNORECASE)
+        if match3:
+            clean_title = match3.group(1).strip()
+            series_name = match3.group(2).strip()
+            # Only treat as series if it contains certain keywords
+            if any(keyword in series_name.lower() for keyword in ['series', 'saga', 'chronicles', 'trilogy', 'duology']):
+                return clean_title, series_name, "1"
+            else:
+                # Might be series name, but we're not sure of order
+                return clean_title, series_name, ""
+        
+        # No series info found in title, return as standalone
+        return title, "", ""
+    
+    def format_yes_no_maybe(field_value):
+        clean_val = clean_field(field_value).lower()
+        if clean_val in ['yes', 'y', 'true', '1']:
+            return '<span class="yes-no-cell yes-cell">Yes</span>'
+        elif clean_val in ['no', 'n', 'false', '0']:
+            return '<span class="yes-no-cell no-cell">No</span>'
+        elif clean_val in ['maybe', 'm', '?', 'possible']:
+            return '<span class="yes-no-cell" style="color: #ffc107; font-weight: bold;">Maybe</span>'
+        elif clean_val:
+            return f'<span class="yes-no-cell">{escape(str(field_value))}</span>'
+        else:
+            return '<span class="yes-no-cell">-</span>'
+    
+    def determine_standalone_series(series_title, series_order):
+        """Determine if book is standalone or part of series"""
+        if series_title and series_title.strip() and series_title.lower() != "nan":
+            return "Series"
+        else:
+            return "Standalone"
+    
+    def determine_audiobook_status(author_name, role, author_data):
+        """Determine audiobook availability based on role and Audible presence"""
+        # All narrators get "Yes"
+        if role and role.lower() == "narrator":
+            return "Yes"
+        
+        # Authors with Audible links get "Maybe"
+        if author_data and author_data.get("Audible Page"):
+            audible_url = str(author_data.get("Audible Page", "")).strip()
+            if audible_url and audible_url.lower() not in ["", "nan", "none"]:
+                return "Maybe"
+        
+        # No Audible link = "No"
+        return "No"
+
     html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -492,6 +579,11 @@ def create_html_dashboard():
             But every direct purchase makes a bigger impact. 💖
         </div>
         
+        <div class="disclaimer-message" style="background: linear-gradient(45deg, #ff6b6b, #ff8e8e); padding: 25px; margin: 25px; border-radius: 12px; border-left: 6px solid #dc3545; font-style: italic; box-shadow: 0 2px 10px rgba(0,0,0,0.1); color: white;">
+            <strong>⚠️ Amazon Scraping Disclaimer</strong><br>
+            My goal was to scrape all this data online and deliver a more comprehensive dashboard with detailed buy links, library availability, narrator info, and more. Unfortunately, Amazon is a massive pain in the ass and doesn't allow you to effectively scrape their data. So a big F*** YOU to Amazon! 🖕 Therefore, I had to condense the columns I would have liked to include. I'm sorry for the limitations, but blame Amazon's anti-scraping fortress, not me! 😤
+        </div>
+        
         <div class="search-bar">
             <input type="text" class="search-input" placeholder="Search authors..." onkeyup="searchAuthors()">
             <button class="export-btn" onclick="exportToCSV()">
@@ -580,14 +672,7 @@ def create_html_dashboard():
                                         <th>Order</th>
                                         <th>Published Year</th>
                                         <th>Formats</th>
-                                        <th>Buy Platforms</th>
-                                        <th>Library Platforms</th>
                                         <th>Audio</th>
-                                        <th>Narrators</th>
-                                        <th>KU</th>
-                                        <th>Kobo+</th>
-                                        <th>Genre</th>
-                                        <th>Notes</th>
                                         <th>Pen Name</th>
                                     </tr>
                                 </thead>
@@ -595,135 +680,6 @@ def create_html_dashboard():
             """
             
             for book in books:
-                # Clean and escape all data
-                def clean_field(field_value):
-                    if pd.isna(field_value) or str(field_value).strip() in ['', 'nan', 'None']:
-                        return ""
-                    return escape(str(field_value).strip())
-                
-                def parse_series_from_title(title_text):
-                    """
-                    Parse series info from book title patterns like:
-                    - "Book Title (Series Name, #1)"
-                    - "Book Title (Series Name #1)" 
-                    - "Book Title (Series Name Book 1)"
-                    Returns: (clean_title, series_name, series_order)
-                    """
-                    if not title_text or pd.isna(title_text):
-                        return "", "", ""
-                    
-                    title = str(title_text).strip()
-                    
-                    # Look for series info in parentheses at the end
-                    import re
-                    
-                    # Pattern 1: (Series Name, #1) or (Series Name, Book 1)
-                    pattern1 = r'^(.*?)\s*\(\s*([^,]+),\s*(?:#|Book\s*)(\d+)\s*\)'
-                    match1 = re.match(pattern1, title, re.IGNORECASE)
-                    if match1:
-                        clean_title = match1.group(1).strip()
-                        series_name = match1.group(2).strip()
-                        series_order = match1.group(3).strip()
-                        return clean_title, series_name, series_order
-                    
-                    #Pattern 2: (Series Name #1) or (Series Name Book 1)
-                    pattern2 = r'^(.*?)\s*\(\s*([^,]+)\s*(?:#|Book\s*)(\d+)\s*\)'
-                    match2 = re.match(pattern2, title, re.IGNORECASE)
-                    if match2:
-                        clean_title = match2.group(1).strip()
-                        series_name = match2.group(2).strip()
-                        series_order = match2.group(3).strip()
-                        return clean_title, series_name, series_order
-                    
-                    # Pattern 3: (Series Name) - assume book 1 or standalone
-                    pattern3 = r'^(.*?)\s*\(\s*([^)]+)\s*\)'
-                    match3 = re.match(pattern3, title, re.IGNORECASE)
-                    if match3:
-                        clean_title = match3.group(1).strip()
-                        series_name = match3.group(2).strip()
-                        # Only treat as series if it contains certain keywords
-                        if any(keyword in series_name.lower() for keyword in ['series', 'saga', 'chronicles', 'trilogy', 'duology']):
-                            return clean_title, series_name, "1"
-                        else:
-                            # Might be series name, but we're not sure of order
-                            return clean_title, series_name, ""
-                    
-                    # No series info found in title, return as standalone
-                    return title, "", ""
-                
-                def format_yes_no(field_value):
-                    clean_val = clean_field(field_value).lower()
-                    if clean_val in ['yes', 'y', 'true', '1']:
-                        return '<span class="yes-no-cell yes-cell">Yes</span>'
-                    elif clean_val in ['no', 'n', 'false', '0']:
-                        return '<span class="yes-no-cell no-cell">No</span>'
-                    elif clean_val:
-                        return f'<span class="yes-no-cell">{escape(str(field_value))}</span>'
-                    else:
-                        return '<span class="yes-no-cell">-</span>'
-                    
-                def extract_platforms(links_text, platform_type="buy"):
-                    """Extract platform names from links or text"""
-                    if not links_text or pd.isna(links_text) or str(links_text).strip() in ['', 'nan']:
-                        return '-'
-                    
-                    text = str(links_text).lower().strip()
-                    platforms = []
-                    
-                    if platform_type == "buy":
-                        # Buy platform keywords to look for
-                        platform_map = {
-                            'amazon': 'Amazon',
-                            'barnes': 'Barnes & Noble',
-                            'bn.com': 'Barnes & Noble', 
-                            'barnesandnoble': 'Barnes & Noble',
-                            'apple': 'Apple Books',
-                            'ibooks': 'Apple Books',
-                            'kobo': 'Kobo',
-                            'google': 'Google Play',
-                            'googleplay': 'Google Play',
-                            'bookshop': 'Bookshop.org',
-                            'indie': 'IndieBound',
-                            'indiebound': 'IndieBound',
-                            'target': 'Target',
-                            'walmart': 'Walmart',
-                            'book depository': 'Book Depository',
-                            'bookdepository': 'Book Depository'
-                        }
-                    else:  # library/rent platforms
-                        platform_map = {
-                            'hoopla': 'Hoopla',
-                            'libby': 'Libby',
-                            'overdrive': 'OverDrive',
-                            'library': 'Library',
-                            'kanopy': 'Kanopy',
-                            'scribd': 'Scribd',
-                            'kindle unlimited': 'Kindle Unlimited',
-                            'epic': 'Epic!'
-                        }
-                    
-                    # Check for each platform
-                    for keyword, display_name in platform_map.items():
-                        if keyword in text:
-                            if display_name not in platforms:
-                                platforms.append(display_name)
-                    
-                    # If no specific platforms found but text exists, try to extract domain names
-                    if not platforms and 'http' in text:
-                        import re
-                        # Extract domain names
-                        domains = re.findall(r'https?://(?:www\.)?([^/\s]+)', text)
-                        for domain in domains:
-                            # Clean up domain names
-                            clean_domain = domain.split('.')[0].title()
-                            if len(clean_domain) > 2:  # Avoid things like "co" or "com"
-                                platforms.append(clean_domain)
-                    
-                    if platforms:
-                        return ', '.join(platforms[:4])  # Limit to 4 platforms to keep it clean
-                    else:
-                        return 'Available' if text and text != '-' else '-'
-                    
                 # Parse book title for series info
                 raw_title = book.get("Book Title", "")
                 clean_title, parsed_series, parsed_order = parse_series_from_title(raw_title)
@@ -738,96 +694,65 @@ def create_html_dashboard():
                 # For order, prefer existing data, then parsed data  
                 existing_order = clean_field(book.get("Series Order", ""))
                 series_order = existing_order if existing_order else parsed_order
-
-                # Try multiple date field names and debug what we find
-                published_date = ""
-                date_debug_info = []
                 
-                # Check all possible date field variations
+                # Try multiple date field names and clean up the format
+                published_date = ""
                 possible_date_fields = [
                     "Published Date", "Release Date", "Publication Date", "Date Published",
                     "Published", "Release", "Publication", "Date", "Pub Date", "Publish Date"
                 ]
-
+                
                 for date_field in possible_date_fields:
                     if book.get(date_field):
                         raw_date_value = book.get(date_field)
-                        # Skip if the value is empty or NaN
+                        
+                        # Skip if the value is NaN or None
                         if pd.isna(raw_date_value) or raw_date_value is None:
-                            date_debug_info.append(f"{date_field} is Nan/None. Skipping...")
                             continue
-                        # Handle float years (like 2023.0) and convert to clean integers
+                        
+                        # Handle float years (like 2019.0) and convert to clean integers
                         if isinstance(raw_date_value, (int, float)):
+                            # Additional check for NaN floats
                             if pd.isna(raw_date_value):
-                                date_debug_info.append(f"{date_field} is NaN float. Skipping...")
                                 continue
+                                
+                            # If it's a number, assume it's a year
                             try:
                                 year = int(raw_date_value)
-                                if 1900 <= year <= 2100:  # reasonable year range
+                                if 1900 <= year <= 2030:  # Reasonable year range
                                     published_date = str(year)
-                                    date_debug_info.append(f"Found numeric year in {date_field}: {published_date}")
                                     break
                             except (ValueError, OverflowError):
-                                date_debug_info.append(f"Could not convert '{raw_date_value}' to int from '{date_field}'. Skipping...")
                                 continue
                         else:
-                            date_value = clean_field(book.get(date_field))
+                            # If it's a string, clean it
+                            date_value = clean_field(raw_date_value)
                             if date_value:
                                 # Try to extract just the year from string dates
                                 year_match = re.search(r'\b(\d{4})\b', date_value)
                                 if year_match:
-                                    year = int(year_match.group(1))
-                                    if 1900 <= year <= 2100:  # reasonable year range
-                                        published_date = date_value
-                                        date_debug_info.append(f"Found date in {date_field}: {date_value}")
-                                        break
-                                else:
-                                    published_date = date_value
-                                    date_debug_info.append(f"Using string from {date_field}: {date_value}")
-                                    break
-                    else:
-                        date_debug_info.append(f"{date_field} exists but is empty")
-
-                # If still no date found, let's see what fields ARE available
-                if not published_date:
-                    available_fields = [key for key in book.keys() if 'date' in key.lower() or 'publish' in key.lower() or 'release' in key.lower()]
-                    if available_fields:
-                        date_debug_info.append(f"Available date-related fields: {available_fields}")
-                        # Try the first available date-related field
-                        for field in available_fields:
-                            raw_value = book.get(field)
-                            if raw_value:
-                                if isinstance(raw_value, (int, float)):
                                     try:
-                                        year = int(raw_value)
-                                        if 1900 <= year <= 2100:  # reasonable year range
+                                        year = int(year_match.group(1))
+                                        if 1900 <= year <= 2030:
                                             published_date = str(year)
-                                            date_debug_info.append(f"Using numeric value from '{field}': {published_date}")
                                             break
-                                    except (ValueError, OverflowError):
+                                    except ValueError:
                                         continue
                                 else:
-                                    date_value = clean_field(raw_value)
-                                    if date_value:
-                                        published_date = date_value
-                                        date_debug_info.append(f"Using string from '{field}': {published_date}")
-                                        break
-                
-                # Print debug info for first few books
-                if len(date_debug_info) > 0:
-                    print(f"Date debug for '{title}': {'; '.join(date_debug_info)}")
+                                    # If no year found, use the original string
+                                    published_date = date_value
+                                    break
                 
                 # Other fields
                 formats = clean_field(book.get("Formats Available", ""))
-                buy_platforms = extract_platforms(book.get("Buy Links", ""), "buy")
-                library_platforms = extract_platforms(book.get("Rent Links", ""), "library")
-                audiobook = format_yes_no(book.get("Audiobook (Y/N)", ""))
-                narrators = clean_field(book.get("Narrators", ""))
-                kindle_unlimited = format_yes_no(book.get("Kindle Unlimited (Y/N)", ""))
-                kobo_plus = format_yes_no(book.get("Kobo+ (Y/N)", ""))
-                genre = clean_field(book.get("Genre", ""))
-                standalone_series = clean_field(book.get("Standalone/Series", ""))
-                notes = clean_field(book.get("Other Notes", ""))
+                
+                # Determine standalone vs series properly
+                standalone_series = determine_standalone_series(series, series_order)
+                
+                # Determine audiobook status based on role and Audible presence
+                audiobook_status = determine_audiobook_status(person, role, author_row)
+                audiobook = format_yes_no_maybe(audiobook_status)
+                
                 pen_name = clean_field(book.get("Pen Name", ""))
                 
                 # Only show pen name if different from main author name
@@ -837,19 +762,12 @@ def create_html_dashboard():
                 html_content += f"""
                     <tr>
                         <td class="book-title-cell">{title or "-"}</td>
-                        <td>{standalone_series or "-"}</td>
+                        <td>{standalone_series}</td>
                         <td class="series-cell">{series or "-"}</td>
                         <td>{series_order or "-"}</td>
                         <td>{published_date or "-"}</td>
                         <td>{formats or "-"}</td>
-                        <td>{buy_platforms}</td>
-                        <td>{library_platforms}</td>
                         <td>{audiobook}</td>
-                        <td>{narrators or "-"}</td>
-                        <td>{kindle_unlimited}</td>
-                        <td>{kobo_plus}</td>
-                        <td>{genre or "-"}</td>
-                        <td>{notes or "-"}</td>
                         <td>{pen_name or "-"}</td>
                     </tr>
                 """
@@ -906,7 +824,7 @@ def create_html_dashboard():
                 document.getElementById('stats').innerHTML = `📊 {total_authors} Authors & Narrators • {total_books} Books`;
             }}
         }}
-
+        
         function exportToCSV() {{
             const csvData = [];
             
@@ -920,14 +838,7 @@ def create_html_dashboard():
                 'Order',
                 'Published Year',
                 'Formats',
-                'Buy Platforms',
-                'Library Platforms', 
                 'Audio',
-                'Narrators',
-                'Kindle Unlimited',
-                'Kobo+',
-                'Genre',
-                'Notes',
                 'Pen Name'
             ]);
             
@@ -956,22 +867,15 @@ def create_html_dashboard():
                                 cells[3]?.textContent?.trim() || '', // Order
                                 cells[4]?.textContent?.trim() || '', // Published Year
                                 cells[5]?.textContent?.trim() || '', // Formats
-                                cells[6]?.textContent?.trim() || '', // Buy Platforms
-                                cells[7]?.textContent?.trim() || '', // Library Platforms
-                                cells[8]?.textContent?.trim() || '', // Audio
-                                cells[9]?.textContent?.trim() || '', // Narrators
-                                cells[10]?.textContent?.trim() || '', // KU
-                                cells[11]?.textContent?.trim() || '', // Kobo+
-                                cells[12]?.textContent?.trim() || '', // Genre
-                                cells[13]?.textContent?.trim() || '', // Notes
-                                cells[14]?.textContent?.trim() || ''  // Pen Name
+                                cells[6]?.textContent?.trim() || '', // Audio
+                                cells[7]?.textContent?.trim() || ''  // Pen Name
                             ];
                             csvData.push(rowData);
                         }}
                     }});
                 }} else {{
                     // If no books, add just the author info
-                    csvData.push([authorName, authorRole, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+                    csvData.push([authorName, authorRole, '', '', '', '', '', '', '', '']);
                 }}
             }});
             
