@@ -137,7 +137,61 @@ def scrape_goodreads_books(author_url, name, role, pen_name):
             if not published_date:
                 print(f"  ⚠️  No date found for '{title}'")
 
-            formats = "Ebook, Paperback, Audiobook"  # Default assumption
+            # FORMAT AND AUDIOBOOK DETECTION
+            formats = []
+            has_audiobook = False
+
+            try:
+                # Look for formats in the book container
+                format_elements = book.select('.greyText, .smallText')
+
+                for elem in format_elements:
+                    text = elem.get_text().strip().lower()
+
+                    # Check for audiobook indicators
+                    if any(keyword in text for keyword in ['audiobook', 'audio book', 'narrated by', 'narrator:','audible']):
+                        has_audiobook = True
+                        if "Audiobook" not in formats:
+                            formats.append("Audiobook")
+                            print(f"  ✅ Found audiobook format for '{title}'")
+
+                    # Check for other formats
+                    if any(keyword in text for keyword in ['kindle', 'ebook', 'digital']):
+                        if 'Ebook' not in formats:
+                            formats.append("Ebook")
+                            print(f"  ✅ Found ebook format for '{title}'")
+
+                    if any(keyword in text for keyword in ['paperback', 'softcover']):
+                        if 'Paperback' not in formats:
+                            formats.append("Paperback")
+                            print(f"  ✅ Found paperback format for '{title}'")
+
+                    if any(keyword in text for keyword in ['hardcover', 'hardback']):
+                        if 'Hardcover' not in formats:
+                            formats.append("Hardcover")
+                            print(f"  ✅ Found hardcover format for '{title}'")
+
+                    # If no specific format found, assume basic formats are available
+                    if not formats:
+                        formats = ['Ebook', 'Paperback'] # Conservative assumptions
+
+                    # Look more speficially for audiobook narrator information
+                    if not has_audiobook:
+                        # Check the entire book container text for narrator mentions
+                        full_text = book.get_text().strip().lower()
+                        if any(keyword in full_text for keyword in ['narrated by', 'narrator:', 'read by', 'performed by']):
+                            has_audiobook = True
+                            if "Audiobook" not in formats:
+                                formats.append("Audiobook")
+                                print(f"  ✅ Found audiobook format for '{title}' (narrator mention)")
+
+                    formats_str = ', '.join(formats)
+                    print(f"  Formats for '{title}': {formats_str} (Audio: {'Yes' if has_audiobook else 'No'})")
+
+            except Exception as e:
+                print(f"  ❌ Error detecting formatsfor '{title}': {e}")
+                formats_str = "Ebook, Paperback"  # Default formats if detection fails
+                has_audiobook = False
 
             book_data = {
                 "Author": name,
@@ -145,10 +199,10 @@ def scrape_goodreads_books(author_url, name, role, pen_name):
                 "Series Title": series_title,
                 "Series Order": series_order,
                 "Published Date": published_date,  # This should now work!
-                "Formats Available": formats,
+                "Formats Available": formats_str,  # Use the formats string
                 "Buy Links": "",  # Placeholder for buy links
                 "Rent Links": "",  # Placeholder for rent links
-                "Audiobook (Y/N)": "Y" if formats and "Audiobook" in formats else "N",
+                "Audiobook (Y/N)": "Y" if has_audiobook else "N",
                 "Narrators": "",  # Placeholder for narrators
                 "Kindle Unlimited (Y/N)": "",  # Placeholder for Kindle Unlimited
                 "Kobo+ (Y/N)": "",  # Placeholder for Kobo+
@@ -160,7 +214,7 @@ def scrape_goodreads_books(author_url, name, role, pen_name):
             }
             
             books.append(book_data)
-            print(f"  📚 Added '{title}' with date: '{published_date}'")
+            print(f"  📚 Added '{title}' - Audio: {'Yes' if has_audiobook else 'No'}")
 
     except Exception as e:
         print(f"❌ Error scraping books for {name}: {e}")
