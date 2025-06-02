@@ -221,6 +221,192 @@ def scrape_goodreads_books(author_url, name, role, pen_name):
 
     return books
 
+def scrape_audible_audiobooks(audible_url, author_name):
+    """
+    Scrape audiobooks from an Audible author page
+    Returns list of audiobook titles
+    """
+    audiobooks = []
+    
+    try:
+        print(f"  🎧 Scraping Audible page for {author_name}...")
+        
+        # Use headers to avoid blocking
+        audible_headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Accept-Encoding": "gzip, deflate",
+            "Connection": "keep-alive",
+        }
+        
+        response = requests.get(audible_url, headers=audible_headers)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+        
+        # Audible uses different selectors than Goodreads
+        # Look for common Audible book containers
+        book_selectors = [
+            '.productListItem',  # Main product listing
+            '.bc-list-item',     # Browse/category pages
+            '.adbl-search-result', # Search results
+            '[data-asin]',       # Items with ASIN (Amazon product ID)
+            '.bc-row-responsive' # Grid layout items
+        ]
+        
+        book_containers = []
+        for selector in book_selectors:
+            containers = soup.select(selector)
+            if containers:
+                book_containers = containers
+                print(f"    Found {len(containers)} books using selector: {selector}")
+                break
+        
+        if not book_containers:
+            # Fallback: look for any links that might be books
+            book_links = soup.select('a[href*="/pd/"]')  # Audible book URLs contain /pd/
+            print(f"    Fallback: Found {len(book_links)} potential book links")
+            
+            for link in book_links:
+                title_elem = link.select_one('h3, .bc-heading, .title-text, .bc-text')
+                if title_elem:
+                    title = title_elem.get_text().strip()
+                    if title and len(title) > 3:  # Filter out short/empty titles
+                        audiobooks.append({
+                            'title': title,
+                            'narrator': 'Unknown',  # Will try to detect later
+                            'url': 'https://www.audible.com' + link.get('href', '')
+                        })
+        else:
+            # Process the book containers
+            for container in book_containers:
+                try:
+                    # Try different title selectors
+                    title_selectors = [
+                        'h3', '.bc-heading', '.title-text', '.bc-text',
+                        '[aria-label*="title"]', '.product-title'
+                    ]
+                    
+                    title = ""
+                    for selector in title_selectors:
+                        title_elem = container.select_one(selector)
+                        if title_elem:
+                            title = title_elem.get_text().strip()
+                            break
+                    
+                    if not title:
+                        # Try to get title from link text
+                        link = container.select_one('a')
+                        if link and link.get_text().strip():
+                            title = link.get_text().strip()
+                    
+                    # Try to find narrator info
+                    narrator_selectors = [
+                        '.narrator', '.authorLabel', '.bc-text',
+                        '[aria-label*="narrator"]', '[aria-label*="author"]'
+                    ]
+                    
+                    narrator = ""
+                    for selector in narrator_selectors:
+                        narrator_elem = container.select_one(selector)
+                        if narrator_elem:
+                            narrator_text = narrator_elem.get_text().strip()
+                            if 'narrated by' in narrator_text.lower() or 'by:' in narrator_text.lower():
+                                narrator = narrator_text
+                                break
+                    
+                    if title and len(title) > 3:
+                        audiobooks.append({
+                            'title': title,
+                            'narrator': narrator or 'Unknown',
+                            'url': audible_url  # Keep original URL for reference
+                        })
+                        print(f"    📚 Found audiobook: {title}")
+                
+                except Exception as e:
+                    print(f"    ⚠️ Error processing book container: {e}")
+                    continue
+        
+        print(f"  ✅ Found {len(audiobooks)} audiobooks for {author_name}")
+        
+    except Exception as e:
+        print(f"  ❌ Error scraping Audible for {author_name}: {e}")
+    
+    return audiobooks
+
+# Update your main scraping function to use Audible data
+def scrape_goodreads_books_with_audible(author_url, name, role, pen_name, author_data=None):
+    """
+    Enhanced version that combines Goodreads books with Audible audiobook data
+    """
+    books = []
+    
+    # First, get the regular book list from Goodreads
+    goodreads_books = scrape_goodreads_books(author_url, name, role, pen_name)
+    
+    # Then, if we have Audible URL, get audiobook data
+    audible_books = []
+    if author_data and author_data.get("Audible Page"):
+        audible_url = author_data.get("Audible Page")
+        if audible_url and str(audible_url).strip() and audible_url != "nan":
+            audible_books = scrape_audible_audiobooks(audible_url, name)
+    
+    # Create a list of audiobook titles for easy matching
+    audiobook_titles = [book['title'].lower() for book in audible_books]
+    
+    # Enhanced matching function
+    def is_audiobook_available(book_title):
+        book_title_clean = book_title.lower().strip()
+        
+        # Direct title match
+        if book_title_clean in audiobook_titles:
+            return True
+        
+        # Fuzzy matching - remove common series info and check
+        import re
+        # Remove series info like "(Series Name, #1)" 
+        clean_title = re.sub(r'\s*\([^)]+\)\s*$', '', book_title_clean)
+        
+        for audio_title in audiobook_titles:
+            audio_clean = re.sub(r'\s*\([^)]+\)\s*$', '', audio_title)
+            
+            # Check if titles match (allowing for minor differences)
+            if clean_title in audio_clean or audio_clean in clean_title:
+                return True
+            
+            # Check if main words match (for slight title variations)
+            book_words = set(clean_title.split())
+            audio_words = set(audio_clean.split())
+            
+            # If 80% of words match, consider it a match
+            if len(book_words) > 0 and len(audio_words) > 0:
+                common_words = book_words.intersection(audio_words)
+                match_ratio = len(common_words) / max(len(book_words), len(audio_words))
+                if match_ratio >= 0.8:
+                    return True
+        
+        return False
+    
+    # Update the Goodreads books with accurate audiobook info
+    for book in goodreads_books:
+        title = book.get("Book Title", "")
+        
+        if is_audiobook_available(title):
+            book["Audiobook (Y/N)"] = "Y"
+            # Add audiobook to formats if not already there
+            formats = book.get("Formats Available", "")
+            if "Audiobook" not in formats:
+                if formats:
+                    book["Formats Available"] = formats + ", Audiobook"
+                else:
+                    book["Formats Available"] = "Audiobook"
+        else:
+            book["Audiobook (Y/N)"] = "N"
+        
+        books.append(book)
+    
+    return books
+
 # Alternative debugging approach - add this to see what's actually on the page:
 def debug_goodreads_page(author_url):
     """Debug function to see what's actually on a Goodreads author page"""

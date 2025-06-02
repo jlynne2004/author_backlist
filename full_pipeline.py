@@ -68,11 +68,19 @@ for idx, row in author_df.iterrows():
 
     names_to_scrape = [name] + pen_names
 
+    # Get the author data for Audible URL
+    author_row = None
+    for entry in data:
+        if entry["Author Name"] == name:
+            author_row = entry
+            break
+
     for pen_name in names_to_scrape:
         print(f"🔍 Scraping {pen_name} for {name} ({role})...")
         author_url = search_goodreads_author(pen_name)
         if author_url:
-            books = scrape_goodreads_books(author_url, name, role, pen_name)
+            # Use the enhanced function that includes Audible data
+            books = scrape_goodreads_books_with_audible(author_url, name, role, author_row)
             for book in books:
                 book["Author"] = name
                 book["Pen Name"] = pen_name if pen_name != name else ""
