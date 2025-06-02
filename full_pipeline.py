@@ -1,7 +1,7 @@
 # full_pipeline.py (HTML Dashboard Version - No More Excel Drama!)
 
 import os
-from scrape_goodreads_backlist import search_goodreads_author, scrape_goodreads_books
+from scrape_goodreads_backlist import search_goodreads_author, scrape_goodreads_books, scrape_goodreads_books_with_audible
 import pandas as pd
 from openpyxl import load_workbook
 import time
