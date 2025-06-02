@@ -511,12 +511,13 @@ def create_html_dashboard():
         
         .table-container {
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
             margin-top: 15px;
         }
         
         @media (max-width: 768px) {
             .books-table {
-                font-size: 0.75em;
+                font-size: 600px; /* Force table to be scrollable width */
             }
             
             .books-table th,

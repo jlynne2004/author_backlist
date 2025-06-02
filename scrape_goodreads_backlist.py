@@ -137,7 +137,10 @@ def scrape_goodreads_books(author_url, name, role, pen_name):
             if not published_date:
                 print(f"  ⚠️  No date found for '{title}'")
 
-            formats = "Ebook, Paperback" # Default formats
+            if role == "Narrator":
+                formats = "Ebook, Paperback, Audiobook"  # Default formats for narrators
+            else:
+                formats = "Ebook, Paperback" # Default formats
 
             book_data = {
                 "Author": name,
