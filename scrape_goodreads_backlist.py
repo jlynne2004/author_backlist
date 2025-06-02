@@ -230,6 +230,11 @@ def scrape_audible_audiobooks(audible_url, author_name):
     
     try:
         print(f"  🎧 Scraping Audible page for {author_name}...")
+        print(f"      URL: {audible_url}")
+        
+        # Clean the URL first
+        if not audible_url.startswith('http'):
+            audible_url = 'https://' + audible_url
         
         # Use headers to avoid blocking
         audible_headers = {
@@ -240,97 +245,74 @@ def scrape_audible_audiobooks(audible_url, author_name):
             "Connection": "keep-alive",
         }
         
-        response = requests.get(audible_url, headers=audible_headers)
+        response = requests.get(audible_url, headers=audible_headers, timeout=10)
+        print(f"      HTTP Status: {response.status_code}")
+        
+        if response.status_code != 200:
+            print(f"      ❌ Failed to load page: {response.status_code}")
+            return audiobooks
+            
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
         
-        # Audible uses different selectors than Goodreads
-        # Look for common Audible book containers
-        book_selectors = [
-            '.productListItem',  # Main product listing
-            '.bc-list-item',     # Browse/category pages
-            '.adbl-search-result', # Search results
-            '[data-asin]',       # Items with ASIN (Amazon product ID)
-            '.bc-row-responsive' # Grid layout items
-        ]
+        # Debug: Check what we actually got
+        page_title = soup.select_one('title')
+        if page_title:
+            print(f"      Page title: {page_title.get_text().strip()}")
         
-        book_containers = []
-        for selector in book_selectors:
-            containers = soup.select(selector)
-            if containers:
-                book_containers = containers
-                print(f"    Found {len(containers)} books using selector: {selector}")
-                break
-        
-        if not book_containers:
-            # Fallback: look for any links that might be books
-            book_links = soup.select('a[href*="/pd/"]')  # Audible book URLs contain /pd/
-            print(f"    Fallback: Found {len(book_links)} potential book links")
-            
-            for link in book_links:
-                title_elem = link.select_one('h3, .bc-heading, .title-text, .bc-text')
-                if title_elem:
-                    title = title_elem.get_text().strip()
-                    if title and len(title) > 3:  # Filter out short/empty titles
-                        audiobooks.append({
-                            'title': title,
-                            'narrator': 'Unknown',  # Will try to detect later
-                            'url': 'https://www.audible.com' + link.get('href', '')
-                        })
+        # Look for any text that mentions the author
+        page_text = soup.get_text().lower()
+        if author_name.lower() in page_text:
+            print(f"      ✅ Found author name '{author_name}' on page")
         else:
-            # Process the book containers
-            for container in book_containers:
-                try:
-                    # Try different title selectors
-                    title_selectors = [
-                        'h3', '.bc-heading', '.title-text', '.bc-text',
-                        '[aria-label*="title"]', '.product-title'
-                    ]
-                    
-                    title = ""
-                    for selector in title_selectors:
-                        title_elem = container.select_one(selector)
-                        if title_elem:
-                            title = title_elem.get_text().strip()
-                            break
-                    
-                    if not title:
-                        # Try to get title from link text
-                        link = container.select_one('a')
-                        if link and link.get_text().strip():
-                            title = link.get_text().strip()
-                    
-                    # Try to find narrator info
-                    narrator_selectors = [
-                        '.narrator', '.authorLabel', '.bc-text',
-                        '[aria-label*="narrator"]', '[aria-label*="author"]'
-                    ]
-                    
-                    narrator = ""
-                    for selector in narrator_selectors:
-                        narrator_elem = container.select_one(selector)
-                        if narrator_elem:
-                            narrator_text = narrator_elem.get_text().strip()
-                            if 'narrated by' in narrator_text.lower() or 'by:' in narrator_text.lower():
-                                narrator = narrator_text
-                                break
-                    
-                    if title and len(title) > 3:
-                        audiobooks.append({
-                            'title': title,
-                            'narrator': narrator or 'Unknown',
-                            'url': audible_url  # Keep original URL for reference
-                        })
-                        print(f"    📚 Found audiobook: {title}")
-                
-                except Exception as e:
-                    print(f"    ⚠️ Error processing book container: {e}")
-                    continue
+            print(f"      ⚠️  Author name '{author_name}' not found on page")
         
-        print(f"  ✅ Found {len(audiobooks)} audiobooks for {author_name}")
+        # Debug: Save page content to see what we're working with
+        with open(f"debug_audible_{author_name.replace(' ', '_')}.html", "w", encoding="utf-8") as f:
+            f.write(response.text)
+        print(f"      💾 Saved page content to debug_audible_{author_name.replace(' ', '_')}.html")
+        
+        # Look for audiobook titles - try multiple approaches
+        print(f"      🔍 Looking for audiobook containers...")
+        
+        # Method 1: Look for product links
+        book_links = soup.select('a[href*="/pd/"]')
+        print(f"      Found {len(book_links)} /pd/ links")
+        
+        if book_links:
+            for i, link in enumerate(book_links[:5]):  # Check first 5
+                title_text = link.get_text().strip()
+                print(f"        Link {i+1}: '{title_text[:100]}...'")
+                
+                if title_text and len(title_text) > 5:
+                    audiobooks.append({
+                        'title': title_text,
+                        'narrator': 'Unknown',
+                        'url': audible_url
+                    })
+        
+        # Method 2: Look for specific Audible book containers
+        containers = soup.select('.adbl-search-result, .bc-list-item, .productListItem')
+        print(f"      Found {len(containers)} product containers")
+        
+        # Method 3: Look for heading elements that might be book titles
+        headings = soup.select('h1, h2, h3, h4')
+        book_headings = []
+        for heading in headings:
+            text = heading.get_text().strip()
+            if len(text) > 10 and len(text) < 200:  # Reasonable title length
+                book_headings.append(text)
+        
+        print(f"      Found {len(book_headings)} potential book headings")
+        for i, heading in enumerate(book_headings[:3]):
+            print(f"        Heading {i+1}: '{heading}'")
+        
+        print(f"  📊 Final result: {len(audiobooks)} audiobooks found for {author_name}")
         
     except Exception as e:
         print(f"  ❌ Error scraping Audible for {author_name}: {e}")
+        import traceback
+        traceback.print_exc()
     
     return audiobooks
 
