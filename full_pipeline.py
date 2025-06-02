@@ -516,7 +516,7 @@ def create_html_dashboard():
         
         @media (max-width: 768px) {
             .books-table {
-                font-size: 50px; /* Force table to be scrollable width */
+                font-size: 25px; /* Force table to be scrollable width */
             }
             
             .books-table th,
